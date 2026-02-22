@@ -1065,6 +1065,38 @@
         const BATTERY_SHEET_URL = `https://docs.google.com/spreadsheets/d/${BATTERY_SHEET_ID}/export?format=csv&gid=0`;
         const GOOGLE_SHEET_VIEW_URL = `https://docs.google.com/spreadsheets/d/${BATTERY_SHEET_ID}/edit`;
 
+        const CACHE_TTL_MS = 5 * 60 * 1000;
+        const CACHE_KEYS = {
+            car: 'batterySystem_car_csv',
+            battery: 'batterySystem_battery_csv',
+            carTs: 'batterySystem_car_csv_ts',
+            batteryTs: 'batterySystem_battery_csv_ts'
+        };
+
+        function getCachedCSV(cacheKey, tsKey) {
+            const ts = parseInt(localStorage.getItem(tsKey) || '0', 10);
+            if (!ts || (Date.now() - ts) > CACHE_TTL_MS) return null;
+            return localStorage.getItem(cacheKey);
+        }
+
+        function setCachedCSV(cacheKey, tsKey, text) {
+            try {
+                localStorage.setItem(cacheKey, text);
+                localStorage.setItem(tsKey, Date.now().toString());
+            } catch (e) {
+                // تجاهل أخطاء التخزين المحلي
+            }
+        }
+
+        async function fetchCSVWithCache(url, cacheKey, tsKey) {
+            const cached = getCachedCSV(cacheKey, tsKey);
+            if (cached) return cached;
+            const response = await fetch(url, { cache: 'no-store' });
+            const text = await response.text();
+            setCachedCSV(cacheKey, tsKey, text);
+            return text;
+        }
+
         const USERS = {
             Abdullah: { password: 'portarage1', role: 'كول سنتر', isStaff: true },
             Suaad: { password: 'portarage2', role: 'كول سنتر', isStaff: true },
@@ -1264,8 +1296,7 @@
 
         async function loadCarData() {
             try {
-                const response = await fetch(CAR_SHEET_URL);
-                const text = await response.text();
+                const text = await fetchCSVWithCache(CAR_SHEET_URL, CACHE_KEYS.car, CACHE_KEYS.carTs);
                 const rows = text.split('\n').filter(row => row.trim());
                 
                 carData = [];
@@ -1320,8 +1351,7 @@
 
         async function loadBatteryData() {
             try {
-                const response = await fetch(BATTERY_SHEET_URL);
-                const text = await response.text();
+                const text = await fetchCSVWithCache(BATTERY_SHEET_URL, CACHE_KEYS.battery, CACHE_KEYS.batteryTs);
                 const rows = text.split('\n').filter(row => row.trim());
                 
                 const headers = parseCSVLine(rows[0]);
