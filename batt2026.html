@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> البحث عن بطاريات السيارات</title>
+  <title>نظام البحث عن بطاريات السيارات</title>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -612,6 +612,74 @@
             color: #000;
         }
 
+        .notice-box {
+            background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+            border: 2px solid #b71c1c;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+            color: white;
+        }
+
+        .notice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            gap: 0.8rem;
+        }
+
+        .notice-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .toggle-notice-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .toggle-notice-btn:hover {
+            background: white;
+            color: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        .notice-content {
+            line-height: 1.8;
+            font-size: 0.85rem;
+        }
+
+        .notice-content.hidden {
+            display: none;
+        }
+
+        .notice-item {
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .notice-item:last-child {
+            border-bottom: none;
+        }
+
+        .notice-item strong {
+            color: #FFD54F;
+            font-size: 0.9rem;
+        }
+
         .dashboard-section {
             display: none;
             margin-bottom: 2rem;
@@ -906,7 +974,7 @@
     <form id="loginForm" onsubmit="handleLogin(event)">
      <div class="form-group"><label class="form-label">اسم المستخدم</label> <input type="text" id="username" class="form-input" placeholder="أدخل اسم المستخدم" required>
      </div>
-     <div class="form-group"><label class="form-label">كلمة المرور</label> <input type="password" id="password" class="form-input" placeholder="أدخل كلمة المرور" required>
+     <div class="form-group"><label class="form-label">كلمة المرور</label> <input type="password" id="password" class="form-input" placeholder="أدخل كلمة ال����رور" required>
      </div><button type="submit" class="btn-login">تسجيل الدخول</button>
     </form>
    </div>
@@ -942,7 +1010,7 @@
       🚗 ابحث عن بطارية سيارتك
      </div>
      <div class="dropdown-group" id="makeGroup"><label class="dropdown-label">🚗 اختر الشركة المصنعة</label>
-      <div class="dropdown-container"><input type="text" id="makeInput" class="dropdown-input" placeholder="اكتب أو اختر الشركة..." autocomplete="off" oninput="filterDropdown('make')" onfocus="showDropdown('make')"> <span class="dropdown-arrow" id="makeArrow">▼</span>
+      <div class="dropdown-container"><input type="text" id="makeInput" class="dropdown-input" placeholder="��كتب أو اختر الشركة..." autocomplete="off" oninput="filterDropdown('make')" onfocus="showDropdown('make')"> <span class="dropdown-arrow" id="makeArrow">▼</span>
        <div id="makeList" class="dropdown-list"></div>
       </div>
      </div>
@@ -963,7 +1031,7 @@
       <div class="dashboard-title-row">
        <div class="dashboard-title" id="dashboardTitle">
         🔋 لوحة التحكم
-       </div><button class="btn-sheet" onclick="openGoogleSheet()"> 📊 فتح القوقل شيت </button>
+       </div><button class="btn-sheet" onclick="openGoogleSheet()"> 📊 فتح القوقل ��يت </button>
       </div>
       <div class="stats-grid">
        <div class="stat-card">
@@ -996,7 +1064,7 @@
          0
         </div>
         <div class="stat-label">
-         مخزون السائقين
+         م��زون السائقين
         </div>
        </div>
        <div class="stat-card">
@@ -1015,10 +1083,10 @@
      <div class="low-stock-section">
       <div class="low-stock-header">
        <div class="low-stock-title">
-        ⚠️ البطاريات المنخفضة أو المنتهية
+        ⚠️ البطاريا�� المنخفضة أو المنتهية
        </div>
        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <div class="filter-buttons"><button class="filter-btn active" onclick="filterLowStock('all')">الكل</button> <button class="filter-btn" onclick="filterLowStock('out')">منتهية فقط</button> <button class="filter-btn" onclick="filterLowStock('low')">منخفضة فقط</button>
+        <div class="filter-buttons"><button class="filter-btn active" onclick="filterLowStock('all')">الكل</button> <button class="filter-btn" onclick="filterLowStock('out')">منتهية ����ط</button> <button class="filter-btn" onclick="filterLowStock('low')">منخفضة فقط</button>
         </div><button class="btn-export-excel" onclick="exportOutOfStockToExcel()"> 📥 تصدير Excel </button>
        </div>
       </div>
@@ -1031,7 +1099,7 @@
           <th>سعر الشراء</th>
           <th>سعر البيع</th>
           <th>المخزون الرئيسي</th>
-          <th>مخزون السائقين</th>
+          <th>مخزون ال��ائقين</th>
           <th>الحالة</th>
          </tr>
         </thead>
@@ -1079,8 +1147,7 @@
             Hamad: { password: 'portarage12', role: 'كول سنتر', isStaff: true },
             Fawzi: { password: 'portarage12', role: 'كول سنتر', isStaff: true },
             Mohamad: { password: 'portarage7896', role: 'المحاسب', isStaff: false },
-            Salem: { password: 'portarage7887', role: 'المدير', isStaff: false },
-            esraa: { password: 'portarage10', role: 'تيم ليدر', isStaff: false }
+            Salem: { password: 'portarage7887', role: 'المدير', isStaff: false }
         };
 
         let currentUser = null;
@@ -1292,10 +1359,10 @@
         async function loadDriversData() {
             try {
                 const predefinedNames = {
-                    'NYAZ-DATARAM': 'نياز وداترام',
+                    'NYAZ': 'نياز',
                     'Muthu': 'موتو',
                     'Ganesh': 'جانيش',
-                    'Iresh-Sanidu': 'اريش-سانديو',
+                    'Iresh-KESAVAN': 'اريش-كيسافان',
                     'GUFRAN': 'غفران',
                     'edeson alpert': 'إيديسون ألبرت',
                     'Irfan': 'عرفان',
@@ -1306,8 +1373,8 @@
                     'MortaDA/Santhosh': 'مرتضى / سانتوش',
                     'Mayura': 'مايورا',
                     'yusuf & rahimah allah': 'يوسف و رحمة الله',
-                    'ali and Mohammed': 'علي ومحمد',
-                    'Sayid and Ramos': 'سيد و رامز',
+                    'Ali and Sayed': 'علي وس��د',
+                    'Sayid and Ramos': 'سيد ورامو',
                     'bala': 'بالا',
                     'Durga Prasad': 'دورجا براساد'
                 };
@@ -1551,7 +1618,7 @@
                 const driversTotal = battery.drivers.reduce((sum, d) => sum + d.fk + d.m, 0);
                 const totalStock = warehouseTotal + driversTotal;
                 
-                const status = totalStock === 0 ? 'منتهية' : 'منخفضة';
+                const status = totalStock === 0 ? 'منتهية' : 'م��خفضة';
                 
                 csv += `${battery.brand},${battery.size},${status}\n`;
             });
@@ -1711,8 +1778,8 @@
                 resultsDiv.innerHTML = `
                     <div style="text-align: center; padding: 3rem; color: #FFC107;">
                         <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
-                        <div style="font-size: 1.4rem; font-weight: bold;">لا توجد نتائج</div>
-                        <div style="color: #999; margin-top: 0.5rem;">لم يتم العثور على بطاريات لهذه السيارة</div>
+                        <div style="font-size: 1.4rem; font-weight: bold;">لا توجد نتائ��</div>
+                        <div style="color: #999; margin-top: 0.5rem;">لم يتم العثور على بطا��يات لهذه السيارة</div>
                     </div>
                 `;
             } else {
@@ -1814,6 +1881,18 @@
             }
         }
 
+        function toggleNotice(button) {
+            const noticeContent = button.closest('.notice-box').querySelector('.notice-content');
+            
+            if (noticeContent.classList.contains('hidden')) {
+                noticeContent.classList.remove('hidden');
+                button.textContent = '🔼 إخفاء';
+            } else {
+                noticeContent.classList.add('hidden');
+                button.textContent = '🔽 إظهار';
+            }
+        }
+
         function generatePricesTable(allBatteries) {
             const showPurchasePrice = currentUser && !currentUser.isStaff;
             const showCopyButton = currentUser && currentUser.isStaff;
@@ -1900,6 +1979,25 @@
                         }).join('')}
                     </tbody>
                 </table>
+                <div class="notice-box">
+                    <div class="notice-header">
+                        <div class="notice-title">
+                            ⚠️ ملاحظة مهمة - رسوم إضافية
+                        </div>
+                        <button class="toggle-notice-btn" onclick="toggleNotice(this)">🔼 إخفاء</button>
+                    </div>
+                    <div class="notice-content">
+                        <div class="notice-item">
+                            <strong>💵 زيادة 15 د.ك:</strong> إذا البطارية تحت الكشن
+                        </div>
+                        <div class="notice-item">
+                            <strong>💵 زيادة 10 د.ك:</strong> علي صباح السالم (أم الهيمان)، شعيبة، ميناء عبدالله، جليعة، بنيدر، الخيران، النوي��يب، الرو��تين، العبدلي، الصبية، جبد، صباح الأحمد، الوفره
+                        </div>
+                        <div class="notice-item">
+                            <strong>💵 زيادة 5 د.ك:</strong> جابر الأحمد، سعد العبدالله، الجهراء، فحيحيل، الأحمدي، غرب عبدالله مبارك
+                        </div>
+                    </div>
+                </div>
             `;
         }
 
@@ -2087,7 +2185,7 @@
             if (!hasResults && searchText !== '') {
                 const noResults = document.createElement('div');
                 noResults.className = 'no-results';
-                noResults.textContent = '❌ لا توجد نتائج مطابقة';
+                noResults.textContent = '❌ لا توجد ����تائج مطابقة';
                 list.appendChild(noResults);
             }
             
@@ -2189,5 +2287,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b079058e22351ca',t:'MTc2NjE1NDI2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d9c219674f977ef',t:'MTc3MzA4MDgyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
