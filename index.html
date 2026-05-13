@@ -11744,16 +11744,39 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       scroll.innerHTML = '';
     }
 
+    function isIgnoredDriverHeader(header) {
+      const normalized = normalizeText(header || '');
+      if (!normalized) return true;
+      const ignoreTerms = ['note', 'notes', 'ملاحظات', 'at', 'supplier', 'vendor', 'المورد'];
+      return ignoreTerms.some(term => normalized === term || normalized.includes(term));
+    }
+
+    function getDriverColumnGroups() {
+      if (!batterySheetHeaders || batterySheetHeaders.length <= 7) return [];
+      const groups = [];
+      let i = 7;
+      while (i < batterySheetHeaders.length) {
+        const header = batterySheetHeaders[i] || '';
+        if (isIgnoredDriverHeader(header)) {
+          i += 1;
+          continue;
+        }
+        const mIndex = Math.min(i + 1, batterySheetHeaders.length - 1);
+        groups.push({ name: header.trim(), fkIndex: i, mIndex });
+        i += 2;
+      }
+      return groups;
+    }
+
     function hasAnyStock(row) {
       const fkQty = Number(row[5]) || 0;
       const mQty = Number(row[6]) || 0;
       let driverQty = 0;
-      if (batterySheetHeaders) {
-        for (let i = 7; i < batterySheetHeaders.length; i += 2) {
-          driverQty += Number(row[i]) || 0;
-          driverQty += Number(row[i + 1]) || 0;
-        }
-      }
+      const driverGroups = getDriverColumnGroups();
+      driverGroups.forEach(group => {
+        driverQty += Number(row[group.fkIndex]) || 0;
+        driverQty += Number(row[group.mIndex]) || 0;
+      });
       return fkQty + mQty + driverQty > 0;
     }
 
@@ -12104,19 +12127,20 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function renderDriverStock(row) {
       if (!batterySheetHeaders || !batterySheetHeaders.length) return '<span style="color:#ccc;">بيانات السائقين غير متاحة</span>';
       const badges = [];
-      for (let i = 7; i < batterySheetHeaders.length; i += 2) {
-        const driverNameRaw = batterySheetHeaders[i] || '';
+      const driverGroups = getDriverColumnGroups();
+      driverGroups.forEach(group => {
+        const driverNameRaw = group.name || '';
         const name = getDriverName(driverNameRaw);
-        if (!name) continue;
-        const fkQty = Number(row[i]) || 0;
-        const mQty = Number(row[i + 1]) || 0;
+        if (!name) return;
+        const fkQty = Number(row[group.fkIndex]) || 0;
+        const mQty = Number(row[group.mIndex]) || 0;
         if (fkQty || mQty) {
           const parts = [];
           if (fkQty) parts.push(`FK:${fkQty}`);
           if (mQty) parts.push(`M:${mQty}`);
           badges.push(`<span class="battery-driver-badge">${escapeHtml(name)} ${parts.join(' | ')}</span>`);
         }
-      }
+      });
       if (!badges.length) {
         return '<span style="color:#fbbf24;">في المورد فقط ❗</span>';
       }
