@@ -977,7 +977,7 @@
 
     .battery-result-row-value {
       font-size: 13px;
-      color: #ddd;
+      color: #fff;
       text-align: center;
       word-break: break-word;
       min-height: 22px;
@@ -2353,10 +2353,6 @@
      </div>
      <div class="service-item submenu-item" data-service="batteryInstall"><span class="label">تركيب بطارية</span>
      </div>
-     <div class="service-item submenu-item admin-only" data-service="openCarSheet"><span class="label">فتح شيت السيارات</span>
-     </div>
-     <div class="service-item submenu-item admin-only" data-service="openStockSheet"><span class="label">فتح شيت المخزن</span>
-     </div>
     </div>
     <div class="service-item" data-service="fuel"><span class="icon">⛽</span> <span class="label">خدمة بنزين</span>
     </div>
@@ -2506,6 +2502,11 @@
       document.getElementById('loginContainer').classList.remove('hidden');
       document.querySelector('.dashboard-wrapper').style.display = 'none';
       document.getElementById('logoutButton').style.display = 'none';
+    // Translate role to Arabic
+    function translateRole(role) {
+      if (role === 'Admin') return 'أدمن';
+      if (role === 'Call Center') return 'كول سنتر';
+      return role;
     }
     
     // Show main app
@@ -2515,7 +2516,8 @@
       document.getElementById('logoutButton').style.display = 'block';
       const statusText = document.getElementById('statusText');
       if (statusText) {
-        statusText.textContent = currentUserRole || 'غير معروف';
+        const translatedRole = translateRole(currentUserRole || 'غير معروف');
+        statusText.textContent = translatedRole;
       }
       
       // Show admin options if user is admin
@@ -11150,6 +11152,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
 
             <div id="batterySearchByCar" class="hidden">
+              <div id="batteryAdminLinks" class="admin-only" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
+                <button type="button" class="btn btn-secondary btn-small" onclick="window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank')">فتح شيت السيارات</button>
+                <button type="button" class="btn btn-secondary btn-small" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank')">فتح شيت المخزن</button>
+              </div>
               <div class="form-grid" style="gap:12px;">
                 <div class="form-field">
                   <label>اختر الشركة</label>
