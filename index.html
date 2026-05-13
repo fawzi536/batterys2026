@@ -984,6 +984,14 @@
       width: 100%;
     }
 
+    .battery-result-row-col-mid .battery-result-row-value,
+    .battery-result-row-col-stock .battery-result-row-value {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+    }
+
     .battery-result-row-value-actions {
       display: flex;
       gap: 4px;
@@ -1079,17 +1087,7 @@
   font-size: 11px;
   font-weight: 700;
   margin: 1px 2px 1px 0;
-}
-
-.battery-stock-badge {
-  background: #1c1c1c;
-  color: #F2BC1B;
-  border: 1px solid rgba(242,188,27,0.18);
-}
-
-.battery-driver-badge {
-  background: #151515;
-  color: #fff;
+    white-space: nowrap;
   border: 1px solid #333;
 }
 
@@ -11150,7 +11148,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px;">
             <button id="batteryModeSizeBtn" class="btn-option active">🔋 البحث بمقاس البطارية</button>
             <button id="batteryModeCarBtn" class="btn-option">🚗 البحث بأسماء السيارات</button>
-            <button type="button" class="btn btn-secondary btn-small" style="display:${isAdmin ? 'inline-flex' : 'none'}" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank', 'noopener')">Open Google Sheet</button>
+            <button type="button" class="btn btn-secondary btn-small" style="display:${isAdmin ? 'inline-flex' : 'none'}" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank', 'noopener')">فتح الاكسيل شيت</button>
           </div>
 
           <div id="batteryLoader" style="display:flex;align-items:center;gap:10px;color:#F2BC1B;font-size:14px; margin-top:10px;">
@@ -11834,6 +11832,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const warranty = getWarranty(brand, size);
         const brandInfo = getBrandInfo(brand);
         const duplicateBadge = `<span class="battery-count-badge">${escapeHtml(size)}</span>`;
+        const driverStockHtml = renderDriverStock(row);
         return `
           <div class="battery-result-row-compact">
             <div class="battery-result-row-col-main">
@@ -11845,8 +11844,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div class="battery-result-row-value">${renderMainStock(row)}</div>
             </div>
             <div class="battery-result-row-col-mid">
-              <div class="battery-result-row-header">كمية السائقين</div>
-              <div class="battery-result-row-value">${renderDriverStock(row)}</div>
+              ${driverStockHtml ? '<div class="battery-result-row-header">كمية السائقين</div>' : ''}
+              <div class="battery-result-row-value">${driverStockHtml}</div>
             </div>
             <div class="battery-result-row-col-small">
               <div class="battery-result-row-header">السعر</div>
@@ -11969,6 +11968,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const warranty = getWarranty(brand, groupSize);
         const brandInfo = getBrandInfo(brand);
         const duplicateBadge = `<span class="battery-count-badge">${escapeHtml(groupSize)}</span>`;
+        const driverStockHtml = renderDriverStock(row);
         return `
           <div class="battery-result-row-compact">
             <div class="battery-result-row-col-main">
@@ -11982,7 +11982,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
             <div class="battery-result-row-col-stock">
               <div class="battery-result-row-header">كمية المخزون</div>
-              <div class="battery-result-row-value">${hasAnyStock(row) ? renderMainStock(row) + '<br>' + renderDriverStock(row) : 'غير متوفرة ❗'}</div>
+              <div class="battery-result-row-value">${renderMainStock(row)}${driverStockHtml ? '<br>' + driverStockHtml : ''}</div>
             </div>
             <div class="battery-result-row-col-small">
               <div class="battery-result-row-header">البلد</div>
@@ -12038,8 +12038,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
 
     const BATTERY_BRAND_INFO = {
       'Motorcraft': { country: 'أمريكية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
-      'Varta': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
-      'Hankook': { country: 'كورية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
+      'Varta': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
+      'Hankook': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
       'Booster': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Oakley': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
@@ -12048,9 +12048,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'Century': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
       'Yuasa': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
       'Exide': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
-      'موتوركرافت': { country: 'هندية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
-      'فارتا': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
-      'هانكوك': { country: 'كورية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
+      'موتوركرافت': { country: 'أمريكية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنتين', 'DA100': 'سنتين' } }, dealer: 'الفتو انترنتشلن' },
+      'فارتا': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
       'بوستر': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'اوكلي': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'موتو رفت': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
@@ -12071,6 +12070,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (upperBrand.includes('MOTER CRAFT') || upperBrand.includes('MOTORCRAFT')) return 'موتوركرافت';
       if (upperBrand.includes('MOTO RAFT') || upperBrand.includes('MOTORAFT')) return 'موتو رفت';
       if (upperBrand.includes('VARTA')) return 'فارتا';
+      if (upperBrand.includes('HANKOOK')) return 'فارتا';
       if (upperBrand.includes('BOSSTER') || upperBrand.includes('BOOSTER')) return 'بوستر';
       if (upperBrand.includes('EVEREADY')) return 'ايفريدي';
       if (upperBrand.includes('HANKOOK')) return 'هانكوك';
@@ -12096,7 +12096,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (normalized === 'فارتا') return 'فارتا';
       if (normalized === 'بوستر') return 'بوستر';
       if (normalized === 'ايفريدي') return 'ايفريدي';
-      if (normalized === 'هانكوك') return 'هانكوك';
       if (normalized === 'اوكلي') return 'اوكلي';
       if (normalized === 'امترا') return 'امترا';
       return brand; // Fallback to original
@@ -12133,7 +12132,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     function renderDriverStock(row) {
-      if (!batterySheetHeaders || !batterySheetHeaders.length) return '<span style="color:#ccc;">بيانات السائقين غير متاحة</span>';
+      if (!batterySheetHeaders || !batterySheetHeaders.length) return '';
       const badges = [];
       const driverGroups = getDriverColumnGroups();
       driverGroups.forEach(group => {
@@ -12144,14 +12143,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const mQty = Number(row[group.mIndex]) || 0;
         if (fkQty || mQty) {
           const parts = [];
-          if (fkQty) parts.push(`FK:${fkQty}`);
-          if (mQty) parts.push(`M:${mQty}`);
+          if (fkQty) parts.push(`اف كي:${fkQty}`);
+          if (mQty) parts.push(`افتخار:${mQty}`);
           badges.push(`<span class="battery-driver-badge">${escapeHtml(name)} ${parts.join(' | ')}</span>`);
         }
       });
-      if (!badges.length) {
-        return '<span style="color:#fbbf24;">في المورد فقط ❗</span>';
-      }
       return badges.join('');
     }
 
@@ -12163,9 +12159,9 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const sizeKey = size.toUpperCase();
       if (brandKey.includes('MOTORCRAFT')) {
         if (sizeKey.includes('DA100') || sizeKey.includes('95AGM')) {
-          return `متوفرة بطارية موتر كرافت امريكيه 🇺🇸 كفالتها (سنتين) على الوكيل فورد الغانم سعرها ${salePrice} دك`;
+          return `متوفرة بطارية موتر كرافت امريكيه 🇺🇸 كفالتها سنتين على الوكيل الفتو انترنتشلن سعرها ${salePrice} دك`;
         }
-        return `متوفرة بطارية موتر كرافت امريكيه 🇺🇸 كفالتها 3 سنوات على الوكيل فورد الغانم السعر مع رسوم التركيب ${salePrice} دك`;
+        return `متوفرة بطارية موتر كرافت امريكيه 🇺🇸 كفالتها 3 سنوات على الوكيل الفتو انترنتشلن السعر مع رسوم التركيب ${salePrice} دك`;
       }
       if (brandKey.includes('VARTA')) {
         return `متوفرة بطارية فارتا المانيه 🇩🇪 كفالتها سنه على الوكيل الفتو انترنشلن السعر مع رسوم التركيب ${salePrice} دك`;
