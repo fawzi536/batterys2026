@@ -11321,7 +11321,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     async function loadBatterySheetData() {
-      const url = 'https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/export?format=csv&gid=0';
+      const sheetId = '1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk';
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('Batteries')}`;
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('فشل تحميل شيت البطاريات');
@@ -11337,7 +11338,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     async function loadCarSheetData() {
-      const url = 'https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/export?format=csv&gid=0';
+      const sheetId = '1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk';
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent('cars name')}`;
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('فشل تحميل شيت السيارات');
