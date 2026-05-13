@@ -2130,6 +2130,7 @@
     /* Important red message used in protection results (single red note as requested) */
     .prot-important{ margin-top:12px; padding:12px; border-radius:8px; background: rgba(127,29,29,0.04); border:1px solid #ef4444; color:#ffb3b3; font-weight:700 }
     .prot-toast{ position:fixed; top:80px; right:40px; background:#F2BC1B; color:#000; padding:12px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.12); box-shadow:0 12px 40px rgba(0,0,0,0.6); display:none; z-index:1500; font-weight:700 }
+    .battery-toast{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) translateY(-20px) scale(0.95); background:#F2BC1B; color:#000; padding:20px 30px; border-radius:15px; border:2px solid rgba(0,0,0,0.2); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(242,188,27,0.3); display:none; z-index:2000; font-weight:700; font-size:16px; transition:all 0.3s ease; text-align:center; }
     /* Coordinates toast */
     .coords-toast{position:fixed;bottom:24px;left:24px;min-width:200px;max-width:calc(100vw - 48px);z-index:2200;padding:12px 16px;border-radius:10px;color:#000;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,0.45);display:none}
     .coords-toast.success{background:#10b981;color:#fff}
@@ -11331,6 +11332,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const value = sizeInput.value.trim();
         if (!value) {
           renderEmptyBatteryResultsMessage();
+          updateBatterySizeSuggestions(''); // Reload all suggestions
         } else {
           updateBatterySizeSuggestions(value);
         }
@@ -11434,6 +11436,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const value = makeSearch.value.trim();
         if (!value) {
           resetModelStep();
+          renderMakeOptions(''); // Reload all makes
         } else {
           renderMakeOptions(value);
         }
@@ -11661,7 +11664,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (!container || !scroll) return;
       const rowsHtml = items.map((item, index) => {
         const row = item.row;
-        const brand = row[1] || 'غير معروف';
+        const brand = getArabicBrandName(row[1] || 'غير معروف');
         const size = row[0] || 'غير معروف';
         const salePrice = (row[4] || row[3] || '').trim() || '-';
         const countOfID = carMake && carModel && carYear ? getCountOfIDForBattery(carMake, carModel, carYear, size) : 0;
@@ -11699,7 +11702,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div class="battery-result-row-value">${escapeHtml(brandInfo.dealer)}</div>
             </div>
             <div class="battery-result-row-col-actions">
-              <div class="battery-result-row-header">الخيارات</div>
               <div class="battery-result-row-value-actions">
                 <button type="button" class="copy-btn-small" data-copy-index="${index}">نسخ</button>
               </div>
@@ -11798,7 +11800,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       }
       return items.map((item, index) => {
         const row = item.row;
-        const brand = row[1] || 'غير معروف';
+        const brand = getArabicBrandName(row[1] || 'غير معروف');
         const salePrice = (row[4] || row[3] || '').trim() || '-';
         const countOfID = carMake && carModel && carYear ? getCountOfIDForBattery(carMake, carModel, carYear, groupSize) : 0;
         const warranty = getWarranty(brand, groupSize);
@@ -11831,7 +11833,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div class="battery-result-row-value">${escapeHtml(brandInfo.dealer)}</div>
             </div>
             <div class="battery-result-row-col-actions">
-              <div class="battery-result-row-header">الخيارات</div>
               <div class="battery-result-row-value-actions">
                 <button type="button" class="copy-btn-small" data-copy-group="${escapeHtml(groupSize)}" data-copy-index="${index}">نسخ</button>
               </div>
@@ -11879,11 +11880,34 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'Oakley': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Amtra': { country: '—', warranty: { default: 'سنة' }, dealer: 'البابطين' },
-      'Emtrac': { country: '—', warranty: { default: 'سنة' }, dealer: 'البابطين' }
+      'Emtrac': { country: '—', warranty: { default: 'سنة' }, dealer: 'البابطين' },
+      'موتوركرافت': { country: 'هندية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
+      'فارتا': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
+      'هانكوك': { country: 'كورية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
+      'بوستر': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
+      'اوكلي': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
+      'موتو رفت': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
+      'ايفريدي': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' }
     };
 
     function getBrandInfo(brand) {
-      return BATTERY_BRAND_INFO[brand] || { country: 'غير محدد', warranty: { default: 'غير محدد' }, dealer: 'غير محدد' };
+      const normalizedBrand = normalizeBrandName(brand);
+      return BATTERY_BRAND_INFO[normalizedBrand] || { country: 'غير محدد', warranty: { default: 'غير محدد' }, dealer: 'غير محدد' };
+    }
+
+    function normalizeBrandName(brand) {
+      if (!brand) return '';
+      const upperBrand = brand.toUpperCase().trim();
+      if (upperBrand.includes('MOTER CRAFT') || upperBrand.includes('MOTORCRAFT')) return 'موتوركرافت';
+      if (upperBrand.includes('MOTO RAFT') || upperBrand.includes('MOTORAFT')) return 'موتو رفت';
+      if (upperBrand.includes('VARTA')) return 'فارتا';
+      if (upperBrand.includes('BOSSTER') || upperBrand.includes('BOOSTER')) return 'بوستر';
+      if (upperBrand.includes('EVEREADY')) return 'ايفريدي';
+      if (upperBrand.includes('HANKOOK')) return 'هانكوك';
+      if (upperBrand.includes('OAKLEY')) return 'اوكلي';
+      if (upperBrand.includes('AMTRA')) return 'امترا';
+      if (upperBrand.includes('EMTRAC')) return 'Emtrac'; // Keep as is for now
+      return brand; // Return original if no match
     }
 
     function getWarranty(brand, size) {
@@ -11894,15 +11918,17 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return info.warranty.default;
     }
 
-    function getCountOfIDForBattery(make, model, year, size) {
-      if (!carSheetData) return 0;
-      const match = carSheetData.find(row => 
-        normalizeText(row[0]) === normalizeText(make) &&
-        normalizeText(row[1]) === normalizeText(model) &&
-        normalizeText(row[2]) === normalizeText(year) &&
-        normalizeText(row[3]) === normalizeText(size)
-      );
-      return match ? Number(match[4] || 0) : 0;
+    function getArabicBrandName(brand) {
+      const normalized = normalizeBrandName(brand);
+      if (normalized === 'موتوركرافت') return 'موتوركرافت';
+      if (normalized === 'موتو رفت') return 'موتو رفت';
+      if (normalized === 'فارتا') return 'فارتا';
+      if (normalized === 'بوستر') return 'بوستر';
+      if (normalized === 'ايفريدي') return 'ايفريدي';
+      if (normalized === 'هانكوك') return 'هانكوك';
+      if (normalized === 'اوكلي') return 'اوكلي';
+      if (normalized === 'امترا') return 'امترا';
+      return brand; // Fallback to original
     }
 
     const BATTERY_DRIVER_MAP = {
@@ -12009,16 +12035,18 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (!el) {
         el = document.createElement('div');
         el.id = 'globalToast';
-        el.className = 'prot-toast';
+        el.className = 'battery-toast';
         document.body.appendChild(el);
       }
       el.textContent = message;
       el.style.display = 'block';
       el.style.opacity = '1';
+      el.style.transform = 'translateY(0) scale(1)';
       setTimeout(() => {
         el.style.opacity = '0';
-        setTimeout(() => { el.style.display = 'none'; }, 200);
-      }, 1800);
+        el.style.transform = 'translateY(-20px) scale(0.95)';
+        setTimeout(() => { el.style.display = 'none'; }, 300);
+      }, 2000);
     }
 
     async function copyToClipboard(text) {
