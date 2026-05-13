@@ -3577,12 +3577,12 @@
       const rows = window._driverStatusRows || [];
       if (window._driverStatusUnavailable) {
         const message = window._driverStatusUnavailableMessage || 'غير متوفر جدول السائقين لهذا الشهر، سيتم التحديث قريباً';
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#fbbf24;padding:12px">${escapeHtml(message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#fbbf24;padding:12px">${escapeHtml(message)}</td></tr>`;
         return;
       }
 
       if (rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="color:#999;padding:12px">لا توجد بيانات</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#999;padding:12px">لا توجد بيانات</td></tr>';
         return;
       }
 
@@ -3607,7 +3607,7 @@
       });
 
       if (computed.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="color:#999;padding:12px">لا توجد نتائج مطابقة</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#999;padding:12px">لا توجد نتائج مطابقة</td></tr>';
         return;
       }
 
@@ -3621,7 +3621,7 @@
 
         const headerRow = document.createElement('tr');
         headerRow.className = 'shift-group-row';
-        headerRow.innerHTML = `<td colspan="6">${escapeHtml(getShiftSectionTitle(groupKey, lang))}</td>`;
+        headerRow.innerHTML = `<td colspan="5">${escapeHtml(getShiftSectionTitle(groupKey, lang))}</td>`;
         tbody.appendChild(headerRow);
 
         const columns = getDriverColumnsRowLabels(lang);
@@ -3633,7 +3633,6 @@
           <td>${escapeHtml(columns.type)}</td>
           <td>${escapeHtml(columns.shift)}</td>
           <td class="export-hide">${escapeHtml(columns.status)}</td>
-          <td class="export-hide">${escapeHtml(columns.off)}</td>
         `;
         tbody.appendChild(columnsRow);
 
@@ -3652,7 +3651,6 @@
             <td>${escapeHtml(typeDisplay || '-')}</td>
             <td>${escapeHtml(shiftDisplay)}</td>
             <td class="export-hide"><span class="status-badge ${problemText ? 'status-problem' : `status-${r.status.key}`}" ${problemText ? `data-problem="${escapeHtml(problemText)}"` : ''}>${statusLabel}</span></td>
-            <td class="export-hide">${daysOff}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -3671,8 +3669,7 @@
           name: 'Driver Name',
           type: 'Type',
           shift: 'Shift Start',
-          status: 'Status',
-          off: 'Days Off'
+          status: 'Status'
         };
       }
 
@@ -3681,8 +3678,7 @@
         name: 'اسم السائق',
         type: 'النوع',
         shift: 'وقت بداية الدوام',
-        status: 'الحالة',
-        off: 'الإجازات'
+        status: 'الحالة'
       };
     }
 
@@ -4748,11 +4744,11 @@
         const headerRow = rows[0] || [];
         const normalizedHeaders = headerRow.map(cell => (cell || '').toString().trim().toLowerCase());
 
-        const findHeaderIndex = pattern => normalizedHeaders.findIndex(h => h.includes(pattern));
-        const serviceIdx = findHeaderIndex('نوع الخدمة') >= 0 ? findHeaderIndex('نوع الخدمة') : findHeaderIndex('service');
-        const driverIdx = findHeaderIndex('اسم السائق') >= 0 ? findHeaderIndex('اسم السائق') : findHeaderIndex('driver');
-        const datetimeIdx = findHeaderIndex('التاريخ') >= 0 ? findHeaderIndex('التاريخ') : Math.max(findHeaderIndex('time'), findHeaderIndex('date'));
-        const empIdx = findHeaderIndex('اسم الموظف') >= 0 ? findHeaderIndex('اسم الموظف') : findHeaderIndex('employee');
+        const findHeaderIndex = pattern => normalizedHeaders.findIndex(h => h === pattern);
+        const serviceIdx = findHeaderIndex('نوع الخدمة'.toLowerCase()) >= 0 ? findHeaderIndex('نوع الخدمة'.toLowerCase()) : findHeaderIndex('service');
+        const driverIdx = findHeaderIndex('اسم السائق'.toLowerCase()) >= 0 ? findHeaderIndex('اسم السائق'.toLowerCase()) : findHeaderIndex('driver');
+        const datetimeIdx = findHeaderIndex('التاريخ'.toLowerCase()) >= 0 ? findHeaderIndex('التاريخ'.toLowerCase()) : Math.max(findHeaderIndex('time'), findHeaderIndex('date'));
+        const empIdx = findHeaderIndex('اسم الموظف'.toLowerCase()) >= 0 ? findHeaderIndex('اسم الموظف'.toLowerCase()) : findHeaderIndex('employee');
 
         const serviceCol = serviceIdx >= 0 ? serviceIdx : 1;
         const driverCol = driverIdx >= 0 ? driverIdx : 2;
@@ -11154,7 +11150,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px;">
             <button id="batteryModeSizeBtn" class="btn-option active">🔋 البحث بمقاس البطارية</button>
             <button id="batteryModeCarBtn" class="btn-option">🚗 البحث بأسماء السيارات</button>
-            <button type="button" class="btn btn-secondary btn-small" style="display:${isAdmin ? 'inline-flex' : 'none'}" onclick="window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank', 'noopener')">فتح شيت السيارات</button>
+            <button type="button" class="btn btn-secondary btn-small" style="display:${isAdmin ? 'inline-flex' : 'none'}" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank', 'noopener')">Open Google Sheet</button>
           </div>
 
           <div id="batteryLoader" style="display:flex;align-items:center;gap:10px;color:#F2BC1B;font-size:14px; margin-top:10px;">
@@ -11341,7 +11337,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     async function loadCarSheetData() {
-      const url = 'https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/export?format=csv&gid=0';
+      const url = 'https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/export?format=csv&gid=0';
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('فشل تحميل شيت السيارات');
