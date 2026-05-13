@@ -2190,7 +2190,7 @@
     /* Important red message used in protection results (single red note as requested) */
     .prot-important{ margin-top:12px; padding:12px; border-radius:8px; background: rgba(127,29,29,0.04); border:1px solid #ef4444; color:#ffb3b3; font-weight:700 }
     .prot-toast{ position:fixed; top:80px; right:40px; background:#F2BC1B; color:#000; padding:12px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.12); box-shadow:0 12px 40px rgba(0,0,0,0.6); display:none; z-index:1500; font-weight:700 }
-    .battery-toast{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) translateY(-20px) scale(0.95); background:#F2BC1B; color:#000; padding:20px 30px; border-radius:15px; border:2px solid rgba(0,0,0,0.2); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(242,188,27,0.3); display:none; z-index:2000; font-weight:700; font-size:16px; transition:all 0.3s ease; text-align:center; }
+    .battery-toast{ position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-20px) scale(0.95); background:#F2BC1B; color:#000; padding:18px 28px; border-radius:15px; border:2px solid rgba(0,0,0,0.2); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(242,188,27,0.3); display:none; z-index:2000; font-weight:700; font-size:15px; transition:all 0.3s ease; text-align:center; max-width:90%; white-space:nowrap; }
     /* Coordinates toast */
     .coords-toast{position:fixed;bottom:24px;left:24px;min-width:200px;max-width:calc(100vw - 48px);z-index:2200;padding:12px 16px;border-radius:10px;color:#000;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,0.45);display:none}
     .coords-toast.success{background:#10b981;color:#fff}
@@ -2437,7 +2437,10 @@
       const authToken = localStorage.getItem('authToken');
       const rememberMe = localStorage.getItem('rememberMe') === 'true';
       
-      if (authToken && rememberMe) {
+      const storedUser = localStorage.getItem('currentUser');
+      if (authToken && rememberMe && storedUser) {
+        const user = usersData.find(u => u.username === storedUser);
+        currentUserRole = user ? (user.role || 'Call Center') : localStorage.getItem('currentUserRole') || 'Call Center';
         isAuthenticated = true;
         showMainApp();
       } else {
@@ -2469,8 +2472,9 @@
             if (row.c && row.c[0] && row.c[1]) {
               const username = row.c[0].v;
               const password = row.c[1].v;
+              const role = row.c[2] ? String(row.c[2].v ?? row.c[2].f).trim() : 'Call Center';
               if (username && password) {
-                usersData.push({ username: String(username), password: String(password) });
+                usersData.push({ username: String(username), password: String(password), role: role || 'Call Center' });
               }
             }
           }
@@ -2512,10 +2516,16 @@
       document.getElementById('loginContainer').classList.add('hidden');
       document.querySelector('.dashboard-wrapper').style.display = 'grid';
       document.getElementById('logoutButton').style.display = 'block';
+      const statusText = document.getElementById('statusText');
+      if (statusText) {
+        statusText.textContent = currentUserRole || 'غير معروف';
+      }
       
       // Show admin options if user is admin
       if (currentUserRole === 'Admin') {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+      } else {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
       }
     }
     
@@ -2547,6 +2557,7 @@
           localStorage.setItem('authToken', authToken);
           localStorage.setItem('rememberMe', rememberMe);
           localStorage.setItem('currentUser', username);
+          localStorage.setItem('currentUserRole', currentUserRole || 'Call Center');
           
           isAuthenticated = true;
           showMainApp();
@@ -2582,7 +2593,9 @@
         localStorage.removeItem('authToken');
         localStorage.removeItem('rememberMe');
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentUserRole');
         isAuthenticated = false;
+        currentUserRole = null;
         showLogin();
       });
       
@@ -11412,19 +11425,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       
       sizeInput.oninput = () => {
         const value = sizeInput.value.trim();
-        if (!value) {
-          renderEmptyBatteryResultsMessage();
-          updateBatterySizeSuggestions(''); // Reload all suggestions
-        } else {
-          updateBatterySizeSuggestions(value);
-        }
+        updateBatterySizeSuggestions(value);
       };
       
       sizeInput.onfocus = () => {
-        const value = sizeInput.value.trim();
-        if (value) {
-          updateBatterySizeSuggestions(value);
-        }
+        updateBatterySizeSuggestions(sizeInput.value.trim());
       };
       
       sizeInput.onkeydown = (e) => {
@@ -11668,7 +11673,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const sizeCounts = matchedCars.reduce((acc, row) => {
         const size = (row[3] || '').trim();
         if (!size) return acc;
-        acc[size] = (acc[size] || 0) + 1;
+        const rawCount = String(row[4] || '').trim();
+        const numericCount = Number(rawCount.replace(/[^0-9.-]/g, ''));
+        if (!Number.isFinite(numericCount) || numericCount <= 0) return acc;
+        acc[size] = (acc[size] || 0) + numericCount;
         return acc;
       }, {});
       const sortedSizes = Object.keys(sizeCounts).sort((a, b) => a.localeCompare(b, 'ar', { sensitivity: 'base' }));
@@ -11731,6 +11739,21 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         }
       });
       return Array.from(map.values());
+    }
+
+    function getCountOfIDForBattery(make, model, year, batterySize) {
+      if (!carSheetData || !make || !model || !year || !batterySize) return 0;
+      return carSheetData.reduce((sum, row) => {
+        if (normalizeText(row[0]) !== normalizeText(make)
+          || normalizeText(row[1]) !== normalizeText(model)
+          || normalizeText(row[2]) !== normalizeText(year)
+          || normalizeText((row[3] || '')) !== normalizeText(batterySize)) {
+          return sum;
+        }
+        const rawCount = String(row[4] || '').trim();
+        const numericCount = Number(rawCount.replace(/[^0-9.-]/g, ''));
+        return sum + (Number.isFinite(numericCount) ? numericCount : 0);
+      }, 0);
     }
 
     function showBatteryFeeNotice(show = false) {
@@ -11976,13 +11999,13 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     const BATTERY_BRAND_INFO = {
-      'Motorcraft': { country: 'هندية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
+      'Motorcraft': { country: 'أمريكية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
       'Varta': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
       'Hankook': { country: 'كورية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
       'Booster': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Oakley': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
-      'Amtra': { country: 'تركية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
+      'Amtra': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
       'Emtrac': { country: 'تركية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
       'Century': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
       'Yuasa': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
@@ -12150,10 +12173,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       el.textContent = message;
       el.style.display = 'block';
       el.style.opacity = '1';
-      el.style.transform = 'translateY(0) scale(1)';
+      el.style.transform = 'translateX(-50%) translateY(0) scale(1)';
       setTimeout(() => {
         el.style.opacity = '0';
-        el.style.transform = 'translateY(-20px) scale(0.95)';
+        el.style.transform = 'translateX(-50%) translateY(-20px) scale(0.95)';
         setTimeout(() => { el.style.display = 'none'; }, 300);
       }, 2000);
     }
