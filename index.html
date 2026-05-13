@@ -197,6 +197,10 @@
       color: #000;
     }
     
+    .admin-only {
+      display: none;
+    }
+    
     /* Submenu styling */
     .service-submenu {
       display: none;
@@ -989,6 +993,62 @@
   display: flex;
   gap: 4px;
   justify-content: center;
+}
+
+.battery-result-row-compact-side {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.battery-result-side-main {
+  flex: 1;
+  min-width: 150px;
+}
+
+.battery-result-side-brand {
+  font-size: 16px;
+  font-weight: 700;
+  color: #F2BC1B;
+  margin-bottom: 4px;
+}
+
+.battery-result-side-size {
+  font-size: 14px;
+  color: #ddd;
+}
+
+.battery-result-side-details {
+  flex: 2;
+  min-width: 200px;
+}
+
+.battery-result-side-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4CAF50;
+  margin-bottom: 4px;
+}
+
+.battery-result-side-stock {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+.battery-result-side-info {
+  font-size: 12px;
+  color: #888;
+}
+
+.battery-result-side-actions {
+  flex-shrink: 0;
 }
 
 .battery-result-cell {
@@ -2327,6 +2387,16 @@
       <div class="service-item submenu-item" data-service="installments"><span class="label">الاقساط</span>
          </div>
     </div>
+    <div class="service-item has-submenu admin-only" data-service="admin"><span class="icon">⚙️</span> <span class="label">إدارة النظام</span> <span class="arrow">▼</span>
+    </div>
+    <div class="service-submenu admin-only" id="adminSubmenu">
+     <div class="service-item submenu-item" data-service="manageUsers"><span class="label">إدارة المستخدمين</span>
+     </div>
+     <div class="service-item submenu-item" data-service="systemSettings"><span class="label">إعدادات النظام</span>
+     </div>
+     <div class="service-item submenu-item" data-service="reports"><span class="label">التقارير</span>
+     </div>
+    </div>
    </aside><!-- Main Content -->
    <main class="main-content"><!-- Header Bar -->
     <header class="header-bar">
@@ -2417,10 +2487,17 @@
     }
     
     // Verify login credentials
+    let currentUserRole = null;
+    
     function verifyLogin(username, password) {
-      return usersData.some(user => 
+      const user = usersData.find(user => 
         user.username === username && user.password === password
       );
+      if (user) {
+        currentUserRole = user.role || 'Call Center';
+        return true;
+      }
+      return false;
     }
     
     // Show login page
@@ -2435,6 +2512,11 @@
       document.getElementById('loginContainer').classList.add('hidden');
       document.querySelector('.dashboard-wrapper').style.display = 'grid';
       document.getElementById('logoutButton').style.display = 'block';
+      
+      // Show admin options if user is admin
+      if (currentUserRole === 'Admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+      }
     }
     
     // Initialize login system
@@ -11662,6 +11744,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const container = document.getElementById('batteryResultsContainer');
       const scroll = document.getElementById('batteryResultsScroll');
       if (!container || !scroll) return;
+      const isCompactLayout = items.length > 10;
       const rowsHtml = items.map((item, index) => {
         const row = item.row;
         const brand = getArabicBrandName(row[1] || 'غير معروف');
@@ -11671,43 +11754,63 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const warranty = getWarranty(brand, size);
         const brandInfo = getBrandInfo(brand);
         const duplicateBadge = countOfID > 0 ? `<span class="battery-count-badge">${countOfID}</span>` : '';
-        return `
-          <div class="battery-result-row-compact">
-            <div class="battery-result-row-col-main">
-              <div class="battery-result-row-header">الماركة</div>
-              <div class="battery-result-row-value">${escapeHtml(brand)} ${duplicateBadge}</div>
-            </div>
-            <div class="battery-result-row-col-small">
-              <div class="battery-result-row-header">المقاس</div>
-              <div class="battery-result-row-value">${escapeHtml(size)}</div>
-            </div>
-            <div class="battery-result-row-col-small">
-              <div class="battery-result-row-header">السعر</div>
-              <div class="battery-result-row-value">${escapeHtml(salePrice)} د.ك</div>
-            </div>
-            <div class="battery-result-row-col-stock">
-              <div class="battery-result-row-header">مخزون السائقين</div>
-              <div class="battery-result-row-value">${renderDriverStock(row)}</div>
-            </div>
-            <div class="battery-result-row-col-small">
-              <div class="battery-result-row-header">البلد</div>
-              <div class="battery-result-row-value">${escapeHtml(brandInfo.country)}</div>
-            </div>
-            <div class="battery-result-row-col-small">
-              <div class="battery-result-row-header">الكفالة</div>
-              <div class="battery-result-row-value">${escapeHtml(warranty)}</div>
-            </div>
-            <div class="battery-result-row-col-mid">
-              <div class="battery-result-row-header">الوكيل</div>
-              <div class="battery-result-row-value">${escapeHtml(brandInfo.dealer)}</div>
-            </div>
-            <div class="battery-result-row-col-actions">
-              <div class="battery-result-row-value-actions">
+        
+        if (isCompactLayout) {
+          return `
+            <div class="battery-result-row-compact-side">
+              <div class="battery-result-side-main">
+                <div class="battery-result-side-brand">${escapeHtml(brand)} ${duplicateBadge}</div>
+                <div class="battery-result-side-size">${escapeHtml(size)}</div>
+              </div>
+              <div class="battery-result-side-details">
+                <div class="battery-result-side-price">${escapeHtml(salePrice)} د.ك</div>
+                <div class="battery-result-side-stock">${renderDriverStock(row)}</div>
+                <div class="battery-result-side-info">${escapeHtml(brandInfo.country)} • ${escapeHtml(warranty)} • ${escapeHtml(brandInfo.dealer)}</div>
+              </div>
+              <div class="battery-result-side-actions">
                 <button type="button" class="copy-btn-small" data-copy-index="${index}">نسخ</button>
               </div>
             </div>
-          </div>
-        `;
+          `;
+        } else {
+          return `
+            <div class="battery-result-row-compact">
+              <div class="battery-result-row-col-main">
+                <div class="battery-result-row-header">الماركة</div>
+                <div class="battery-result-row-value">${escapeHtml(brand)} ${duplicateBadge}</div>
+              </div>
+              <div class="battery-result-row-col-small">
+                <div class="battery-result-row-header">المقاس</div>
+                <div class="battery-result-row-value">${escapeHtml(size)}</div>
+              </div>
+              <div class="battery-result-row-col-small">
+                <div class="battery-result-row-header">السعر</div>
+                <div class="battery-result-row-value">${escapeHtml(salePrice)} د.ك</div>
+              </div>
+              <div class="battery-result-row-col-stock">
+                <div class="battery-result-row-header">مخزون السائقين</div>
+                <div class="battery-result-row-value">${renderDriverStock(row)}</div>
+              </div>
+              <div class="battery-result-row-col-small">
+                <div class="battery-result-row-header">البلد</div>
+                <div class="battery-result-row-value">${escapeHtml(brandInfo.country)}</div>
+              </div>
+              <div class="battery-result-row-col-small">
+                <div class="battery-result-row-header">الكفالة</div>
+                <div class="battery-result-row-value">${escapeHtml(warranty)}</div>
+              </div>
+              <div class="battery-result-row-col-mid">
+                <div class="battery-result-row-header">الوكيل</div>
+                <div class="battery-result-row-value">${escapeHtml(brandInfo.dealer)}</div>
+              </div>
+              <div class="battery-result-row-col-actions">
+                <div class="battery-result-row-value-actions">
+                  <button type="button" class="copy-btn-small" data-copy-index="${index}">نسخ</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
       }).join('');
 
       scroll.innerHTML = `
@@ -11879,15 +11982,21 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'Booster': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Oakley': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
-      'Amtra': { country: '—', warranty: { default: 'سنة' }, dealer: 'البابطين' },
-      'Emtrac': { country: '—', warranty: { default: 'سنة' }, dealer: 'البابطين' },
+      'Amtra': { country: 'تركية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
+      'Emtrac': { country: 'تركية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
+      'Century': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
+      'Yuasa': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
+      'Exide': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
       'موتوركرافت': { country: 'هندية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
       'فارتا': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
       'هانكوك': { country: 'كورية', warranty: { default: 'سنة' }, dealer: 'الفهد إنترناشيونال' },
       'بوستر': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'اوكلي': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'موتو رفت': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
-      'ايفريدي': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' }
+      'ايفريدي': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
+      'سنشري': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
+      'يواسا': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
+      'إكسايد': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' }
     };
 
     function getBrandInfo(brand) {
