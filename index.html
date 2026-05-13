@@ -11744,28 +11744,34 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       scroll.innerHTML = '';
     }
 
-    function isIgnoredDriverHeader(header) {
-      const normalized = normalizeText(header || '');
-      if (!normalized) return true;
-      const ignoreTerms = ['note', 'notes', 'ملاحظات', 'at', 'supplier', 'vendor', 'المورد'];
-      return ignoreTerms.some(term => normalized === term || normalized.includes(term));
-    }
+    const BATTERY_DRIVER_COLUMN_CONFIGS = [
+      { label: 'dattaram+niyas', fkIndex: 7, mIndex: 8 },
+      { label: 'hari+roxy', fkIndex: 9, mIndex: 10 },
+      { label: 'GUFRAN', fkIndex: 11, mIndex: 12 },
+      { label: 'riesh+kesavan', fkIndex: 13, mIndex: 14 },
+      { label: 'sanidu', fkIndex: 15, mIndex: 16 },
+      { label: 'mortada+irfan', fkIndex: 17, mIndex: 18 },
+      { label: 'Ganesh', fkIndex: 19, mIndex: 20 },
+      { label: 'Albert', fkIndex: 21, mIndex: 22 },
+      { label: 'Lakshman', fkIndex: 23, mIndex: 24 },
+      { label: 'Mayura', fkIndex: 25, mIndex: 26 },
+      { label: 'bala', fkIndex: 27, mIndex: 28 },
+      { label: 'santheel', fkIndex: 29, mIndex: 30 },
+      { label: 'ARVENTH', fkIndex: 31, mIndex: 32 },
+      { label: 'yusuf & rahimah allah', fkIndex: 33, mIndex: 34 },
+      { label: 'ali and Mohammed', fkIndex: 35, mIndex: 36 },
+      { label: 'Sayid and Ramos', fkIndex: 37, mIndex: 38 },
+      { label: 'Durga Prasad', fkIndex: 39, mIndex: 40 },
+      { label: 'sinjiwah', fkIndex: 41, mIndex: 42 }
+    ];
 
     function getDriverColumnGroups() {
       if (!batterySheetHeaders || batterySheetHeaders.length <= 7) return [];
-      const groups = [];
-      let i = 7;
-      while (i < batterySheetHeaders.length) {
-        const header = batterySheetHeaders[i] || '';
-        if (isIgnoredDriverHeader(header)) {
-          i += 1;
-          continue;
-        }
-        const mIndex = Math.min(i + 1, batterySheetHeaders.length - 1);
-        groups.push({ name: header.trim(), fkIndex: i, mIndex });
-        i += 2;
-      }
-      return groups;
+      return BATTERY_DRIVER_COLUMN_CONFIGS.map(config => ({
+        name: config.label,
+        fkIndex: config.fkIndex,
+        mIndex: config.mIndex
+      }));
     }
 
     function hasAnyStock(row) {
@@ -12114,9 +12120,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'mayura': 'مايورا',
       'yusuf & rahimah allah': 'يوسف و رحمة الله',
       'ali and sayed': 'علي وسيد',
+      'ali and mohammed': 'علي ومحمد',
       'sayid and ramos': 'سيد ورامو',
       'bala': 'بالا',
-      'durga prasad': 'دورجا براساد'
+      'durga prasad': 'دورجا براساد',
+      'sinjiwah': 'سينجيا'
     };
 
     function getDriverName(raw) {
