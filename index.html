@@ -3089,8 +3089,6 @@
           'insurance': 'تأمينات',
           'annualSubscription': 'الاشتراك السنوي',
           'installments': 'الاقساط',
-          'openCarSheet': 'فتح شيت السيارات',
-          'openStockSheet': 'فتح شيت المخزن',
           'coords': 'الاحداثيات'
         };
         
@@ -3108,12 +3106,6 @@
             break;
           case 'batteryInstall':
             renderBatteryInstallInterface();
-            break;
-          case 'openCarSheet':
-            window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank', 'noopener');
-            break;
-          case 'openStockSheet':
-            window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank', 'noopener');
             break;
           case 'fuel':
             renderFuelInterface();
@@ -4708,7 +4700,6 @@
                   <th>اسم السائق</th>
                   <th>التاريخ والوقت</th>
                   <th>اسم الموظف</th>
-                  <th>ملاحظات</th>
                 </tr>
               </thead>
               <tbody>
@@ -4747,38 +4738,57 @@
         const res = await fetch(csvUrl, { cache: 'no-cache' });
         const tbody = document.querySelector('#driverScheduleTable tbody');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="5" style="color:#999;padding:12px">جاري التحميل...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="color:#999;padding:12px">جاري التحميل...</td></tr>';
         if (!res.ok) {
-          tbody.innerHTML = `<tr><td colspan="5" style="color:#f88;padding:12px">خطأ في تحميل الشيت (تأكد من أن الشيت عام)</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" style="color:#f88;padding:12px">خطأ في تحميل الشيت (تأكد من أن الشيت عام)</td></tr>`;
           return;
         }
         const text = await res.text();
         const rows = parseCSV(text || '');
-        const dataRows = rows.slice(1).filter(r => r && (r[0] || r[1] || r[2] || r[3]));
+        const headerRow = rows[0] || [];
+        const normalizedHeaders = headerRow.map(cell => (cell || '').toString().trim().toLowerCase());
+
+        const findHeaderIndex = pattern => normalizedHeaders.findIndex(h => h.includes(pattern));
+        const serviceIdx = findHeaderIndex('نوع الخدمة') >= 0 ? findHeaderIndex('نوع الخدمة') : findHeaderIndex('service');
+        const driverIdx = findHeaderIndex('اسم السائق') >= 0 ? findHeaderIndex('اسم السائق') : findHeaderIndex('driver');
+        const datetimeIdx = findHeaderIndex('التاريخ') >= 0 ? findHeaderIndex('التاريخ') : Math.max(findHeaderIndex('time'), findHeaderIndex('date'));
+        const empIdx = findHeaderIndex('اسم الموظف') >= 0 ? findHeaderIndex('اسم الموظف') : findHeaderIndex('employee');
+
+        const serviceCol = serviceIdx >= 0 ? serviceIdx : 1;
+        const driverCol = driverIdx >= 0 ? driverIdx : 2;
+        const datetimeCol = datetimeIdx >= 0 ? datetimeIdx : 3;
+        const empCol = empIdx >= 0 ? empIdx : 0;
+
+        const dataRows = rows.slice(1).filter(r => {
+          const emp = (r[empCol] || '').toString().trim();
+          const svc = (r[serviceCol] || '').toString().trim();
+          const driver = (r[driverCol] || '').toString().trim();
+          const datetime = (r[datetimeCol] || '').toString().trim();
+          return emp || svc || driver || datetime;
+        });
 
         if (dataRows.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="color:#999;padding:12px">لا توجد بيانات</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" style="color:#999;padding:12px">لا توجد بيانات</td></tr>';
           return;
         }
 
-        // The sheet columns expected: A: اسم الموظف, B: نوع الخدمة, C: اسم السائق, D: الوقت والتاريخ, E: ملاحظات
-        // We'll display: نوع الخدمة | اسم السائق | التاريخ والوقت | اسم الموظف | ملاحظات
+        // The sheet columns expected: اسم الموظف و نوع الخدمة و اسم السائق و الوقت والتاريخ.
+        // Notes/AT columns are ignored so the driver column is not misread.
         tbody.innerHTML = '';
         dataRows.forEach(r => {
-          const emp = (r[0]||'').toString().trim();
-          const svc = (r[1]||'').toString().trim();
-          const driver = (r[2]||'').toString().trim();
-          const datetime = (r[3]||'').toString().trim();
-          const notes = (r[4]||'').toString().trim();
+          const emp = (r[empCol]||'').toString().trim();
+          const svc = (r[serviceCol]||'').toString().trim();
+          const driver = (r[driverCol]||'').toString().trim();
+          const datetime = (r[datetimeCol]||'').toString().trim();
 
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${escapeHtml(svc)}</td><td>${escapeHtml(driver)}</td><td>${escapeHtml(datetime)}</td><td>${escapeHtml(emp)}</td><td>${escapeHtml(notes)}</td>`;
+          tr.innerHTML = `<td>${escapeHtml(svc)}</td><td>${escapeHtml(driver)}</td><td>${escapeHtml(datetime)}</td><td>${escapeHtml(emp)}</td>`;
           tbody.appendChild(tr);
         });
       } catch (err) {
         console.error(err);
         const tbody = document.querySelector('#driverScheduleTable tbody');
-        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="color:#f88;padding:12px">خطأ في تحميل البيانات</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="color:#f88;padding:12px">خطأ في تحميل البيانات</td></tr>`;
       }
     }
 
@@ -11137,14 +11147,14 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       setContentAreaEmbedMode(true);
       const contentArea = document.getElementById('contentArea');
       if (!contentArea) return;
+      const isAdmin = currentUserRole === 'Admin';
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
           <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px;">
             <button id="batteryModeSizeBtn" class="btn-option active">🔋 البحث بمقاس البطارية</button>
             <button id="batteryModeCarBtn" class="btn-option">🚗 البحث بأسماء السيارات</button>
-            <button type="button" class="btn btn-secondary btn-small admin-only" onclick="window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank')">فتح شيت السيارات</button>
-            <button type="button" class="btn btn-secondary btn-small admin-only" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank')">فتح شيت المخزن</button>
+            <button type="button" class="btn btn-secondary btn-small" style="display:${isAdmin ? 'inline-flex' : 'none'}" onclick="window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank')">فتح شيت السيارات</button>
           </div>
 
           <div id="batteryLoader" style="display:flex;align-items:center;gap:10px;color:#F2BC1B;font-size:14px; margin-top:10px;">
@@ -11945,7 +11955,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
             <div class="battery-result-row-col-stock">
               <div class="battery-result-row-header">كمية المخزون</div>
-              <div class="battery-result-row-value">${hasAnyStock(row) ? renderDriverStock(row) : 'غير متوفرة ❗'}</div>
+              <div class="battery-result-row-value">${hasAnyStock(row) ? renderMainStock(row) + '<br>' + renderDriverStock(row) : 'غير متوفرة ❗'}</div>
             </div>
             <div class="battery-result-row-col-small">
               <div class="battery-result-row-header">البلد</div>
