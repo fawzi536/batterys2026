@@ -977,7 +977,7 @@
 
     .battery-result-row-value {
       font-size: 13px;
-      color: #fff;
+      color: #F2BC1B;
       text-align: center;
       word-break: break-word;
       min-height: 22px;
@@ -989,6 +989,14 @@
       gap: 4px;
       justify-content: center;
       width: 100%;
+    }
+
+    .battery-result-row-header {
+      font-size: 12px;
+      color: #F2BC1B;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 4px;
     }
 
     .battery-result-row-col-placeholder {
@@ -11131,6 +11139,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (!contentArea) return;
 
       contentArea.innerHTML = `
+        <div id="batteryAdminLinks" class="admin-only" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
+          <button type="button" class="btn btn-secondary btn-small" onclick="window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank')">فتح شيت السيارات</button>
+          <button type="button" class="btn btn-secondary btn-small" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank')">فتح شيت المخزن</button>
+        </div>
         <div class="form-section full-width">
           <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px;">
             <button id="batteryModeSizeBtn" class="btn-option active">🔋 البحث بمقاس البطارية</button>
@@ -11154,10 +11166,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
 
             <div id="batterySearchByCar" class="hidden">
-              <div id="batteryAdminLinks" class="admin-only" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
-                <button type="button" class="btn btn-secondary btn-small" onclick="window.open('https://docs.google.com/spreadsheets/d/1tUjEj-1FtAqewhJiRcC4dgGwgrxhb5OjKxGWEojFzlg/edit?usp=sharing', '_blank')">فتح شيت السيارات</button>
-                <button type="button" class="btn btn-secondary btn-small" onclick="window.open('https://docs.google.com/spreadsheets/d/1WghSWhC-NJ0h--afoaR0ydzTP8ULw7N3tBDgToXoLVk/edit?usp=sharing', '_blank')">فتح شيت المخزن</button>
-              </div>
               <div class="form-grid" style="gap:12px;">
                 <div class="form-field">
                   <label>اختر الشركة</label>
@@ -11661,7 +11669,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         return;
       }
       setBatteryError('');
-      const matching = (batterySheetData || []).filter(row => normalizeText(row[0]) === normalizeText(sizeValue) && hasAnyStock(row));
+      const matching = (batterySheetData || []).filter(row => normalizeText(row[0]) === normalizeText(sizeValue) && (currentUserRole === 'Admin' || hasAnyStock(row)));
       if (!matching.length) {
         renderEmptyBatteryResultsMessage(`لم نوجد نتائج للمقاس: ${sizeValue}`);
         return;
@@ -11701,7 +11709,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const title = `${make} - ${model} - ${year}`;
       
       const groups = sortedSizes.map(size => {
-        const items = (batterySheetData || []).filter(row => normalizeText(row[0]) === normalizeText(size) && hasAnyStock(row));
+        const items = (batterySheetData || []).filter(row => normalizeText(row[0]) === normalizeText(size) && (currentUserRole === 'Admin' || hasAnyStock(row)));
         return {
           size,
           count: sizeCounts[size],
