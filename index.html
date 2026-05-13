@@ -282,7 +282,7 @@
     /* Content Area */
     .content-area {
       flex: 1;
-      overflow-y: auto;
+      overflow-y: hidden;
       overflow-x: hidden;
       padding: 12px;
       display: grid;
@@ -290,19 +290,6 @@
       grid-auto-rows: max-content;
       gap: 10px;
       align-content: start;
-    }
-    
-    .content-area::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .content-area::-webkit-scrollbar-track {
-      background: #1a1a1a;
-    }
-    
-    .content-area::-webkit-scrollbar-thumb {
-      background: #F2BC1B;
-      border-radius: 4px;
     }
     
     /* Form Sections */
