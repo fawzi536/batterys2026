@@ -11842,18 +11842,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div class="battery-result-row-value">${escapeHtml(brand)} ${duplicateBadge}</div>
             </div>
             <div class="battery-result-row-col-small">
-              <div class="battery-result-row-header">كمية المخزون</div>
-              <div class="battery-result-row-value">${renderMainStock(row)}</div>
-            </div>
-            <div class="battery-result-row-col-mid">
-              ${driverStockHtml ? '<div class="battery-result-row-header">كمية السائقين</div>' : ''}
-              <div class="battery-result-row-value">${driverStockHtml}</div>
-            </div>
-            <div class="battery-result-row-col-small">
-              <div class="battery-result-row-header">السعر</div>
-              <div class="battery-result-row-value">${escapeHtml(salePrice)} د.ك</div>
-            </div>
-            <div class="battery-result-row-col-small">
               <div class="battery-result-row-header">البلد</div>
               <div class="battery-result-row-value">${escapeHtml(brandInfo.country)}</div>
             </div>
@@ -11864,6 +11852,18 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <div class="battery-result-row-col-mid">
               <div class="battery-result-row-header">الوكيل</div>
               <div class="battery-result-row-value">${escapeHtml(brandInfo.dealer)}</div>
+            </div>
+            <div class="battery-result-row-col-small">
+              <div class="battery-result-row-header">السعر</div>
+              <div class="battery-result-row-value">${escapeHtml(salePrice)} د.ك</div>
+            </div>
+            <div class="battery-result-row-col-small">
+              <div class="battery-result-row-header">كمية المخزون</div>
+              <div class="battery-result-row-value">${renderMainStock(row)}</div>
+            </div>
+            <div class="battery-result-row-col-mid">
+              ${driverStockHtml ? '<div class="battery-result-row-header">كمية السائقين</div>' : ''}
+              <div class="battery-result-row-value">${driverStockHtml}</div>
             </div>
             <div class="battery-result-row-col-actions">
               <div class="battery-result-row-value-actions">
