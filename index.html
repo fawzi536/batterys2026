@@ -947,7 +947,7 @@
 
 .battery-result-row-compact {
   display: grid;
-      grid-template-columns: minmax(180px, 2fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(180px, 1.4fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(180px, 1.8fr) minmax(100px, 100px);
+      grid-template-columns: minmax(180px, 2fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(180px, 1.4fr) minmax(180px, 1.4fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(180px, 1.8fr) minmax(100px, 100px);
       gap: 10px;
       padding: 14px;
       border-radius: 14px;
@@ -11805,7 +11805,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
             <div class="battery-result-row-col-small">
               <div class="battery-result-row-header">كمية المخزون</div>
-              <div class="battery-result-row-value">${hasAnyStock(row) ? renderDriverStock(row) : 'غير متوفرة ❗'}</div>
+              <div class="battery-result-row-value">${renderMainStock(row)}</div>
+            </div>
+            <div class="battery-result-row-col-mid">
+              <div class="battery-result-row-header">كمية السائقين</div>
+              <div class="battery-result-row-value">${renderDriverStock(row)}</div>
             </div>
             <div class="battery-result-row-col-small">
               <div class="battery-result-row-header">السعر</div>
