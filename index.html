@@ -12491,18 +12491,18 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return lines.map(line => {
         const cols = line.split(',');
         const price = parseFloat(cols[2]) || 0;
-        const liters = parseFloat(cols[3]) || 0;
+        const contAvailable = parseFloat(cols[3]) || 0;
         const priceLiter = parseFloat(cols[4]) || 0;
-        const effectivePriceLiter = priceLiter > 0 ? priceLiter : (liters > 0 ? price / liters : 0);
+        const effectivePriceLiter = priceLiter > 0 ? priceLiter : (contAvailable > 0 ? price / contAvailable : 0);
         return {
           brand: cols[0] ? cols[0].replace(/"/g, '') : '',
           type: cols[1] ? cols[1].replace(/"/g, '') : '',
           price: price,
-          liters: liters,
+          liters: contAvailable,
           priceLiter: priceLiter,
           effectivePriceLiter: effectivePriceLiter,
           country: cols[5] ? cols[5].replace(/"/g, '') : '',
-          contAvailable: parseInt(cols[6]) || 0
+          contAvailable: parseInt(cols[3]) || 0
         };
       }).filter(oil => oil.brand);
     }
