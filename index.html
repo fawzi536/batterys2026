@@ -12537,10 +12537,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const lines = text.trim().split(/\r?\n/);
       if (lines.length <= 1) return [];
       const headers = parseCsvLine(lines[0]);
-      const modelIndex = findHeaderIndex(headers, ['car model', 'model', 'name', 'carname', 'car name', 'اسم السيارة'], 0);
-      const typeIndex = findHeaderIndex(headers, ['oil type', 'type', 'viscosity', 'الزيت'], 1);
-      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'c', 'quantity', 'qty', 'الكمية'], 2);
-      const serviceIndex = findHeaderIndex(headers, ['major service', 'majorservice', 'service', 'major', 'ميجر سيرفس'], 3);
+      const modelIndex = 0;
+      const typeIndex = 1;
+      const litersIndex = 2; // Column C for car liters
+      const serviceIndex = 3;
 
       return lines.slice(1).map(line => {
         if (!line.trim()) return null;
