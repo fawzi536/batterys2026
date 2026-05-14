@@ -553,11 +553,11 @@
       background: #2a2a2a;
       border: 1px solid #404040;
       border-radius: 4px;
-      padding: 10px 8px;
+      padding: 6px 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
-      font-size: 13px;
+      font-size: 12px;
       color: #ccc;
       font-weight: 600;
     }
@@ -11162,7 +11162,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div class="form-grid" style="gap:12px;">
                 <div class="form-field" style="flex:1; max-width:380px; min-width:220px; width:100%;">
                   <label>ابحث عن المقاس</label>
-                  <input id="batterySizeInput" class="form-control" placeholder="اكتب مقاس البطارية مثل DA95 أو 95AGM" autocomplete="off" />
+                  <input id="batterySizeInput" class="form-control" placeholder="اكتب المقاس..." autocomplete="off" />
                 </div>
               </div>
               <div id="batterySizeList" class="data-table-container hidden" style="margin-top:10px; max-height:260px; overflow:auto;"></div>
@@ -11191,8 +11191,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         </div>
 
         <div id="batteryResultsContainer" class="data-table-container hidden">
-          <div class="table-header">نتائج البحث</div>
-          <div class="table-scroll" id="batteryResultsScroll"></div>
+
         </div>
 
         <div id="batteryFeeNotice" class="warning-box hidden" style="margin-top:10px;">
@@ -11824,7 +11823,32 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const container = document.getElementById('batteryResultsContainer');
       const scroll = document.getElementById('batteryResultsScroll');
       if (!container || !scroll) return;
-      const rowsHtml = items.map((item, index) => {
+      
+      // Filter items: if Call Center, hide items with no stock
+      let filteredItems = items;
+      if (currentUserRole === 'Call Center') {
+        filteredItems = items.filter(item => {
+          const row = item.row;
+          const fkQty = Number(row[5]) || 0;
+          const mQty = Number(row[6]) || 0;
+          let hasDriverStock = false;
+          const driverGroups = getDriverColumnGroups();
+          driverGroups.forEach(group => {
+            const fkQtyDriver = Number(row[group.fkIndex]) || 0;
+            const mQtyDriver = Number(row[group.mIndex]) || 0;
+            if (fkQtyDriver || mQtyDriver) hasDriverStock = true;
+          });
+          return (fkQty + mQty > 0) || hasDriverStock;
+        });
+      }
+      
+      if (!filteredItems.length) {
+        scroll.innerHTML = `<div class="battery-results-message">لا توجد بطاريات متاحة</div>`;
+        container.classList.remove('hidden');
+        return;
+      }
+      
+      const rowsHtml = filteredItems.map((item, index) => {
         const row = item.row;
         const brand = getArabicBrandName(row[1] || 'غير معروف');
         const size = row[0] || 'غير معروف';
@@ -11861,7 +11885,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div class="battery-result-row-value">${renderMainStock(row)}</div>
             </div>
             <div class="battery-result-row-col-mid">
-              ${driverStockHtml ? '<div class="battery-result-row-header">كمية السائقين</div>' : ''}
+              <div class="battery-result-row-header">كمية السائقين</div>
               <div class="battery-result-row-value">${driverStockHtml}</div>
             </div>
             <div class="battery-result-row-col-actions">
@@ -11901,7 +11925,35 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const container = document.getElementById('batteryResultsContainer');
       const scroll = document.getElementById('batteryResultsScroll');
       if (!container || !scroll) return;
-      const groupsHtml = groups.map(group => {
+      
+      // Filter groups for Call Center
+      let filteredGroups = groups;
+      if (currentUserRole === 'Call Center') {
+        filteredGroups = groups.map(group => {
+          const filteredItems = group.items.filter(item => {
+            const row = item.row;
+            const fkQty = Number(row[5]) || 0;
+            const mQty = Number(row[6]) || 0;
+            let hasDriverStock = false;
+            const driverGroups = getDriverColumnGroups();
+            driverGroups.forEach(driverGroup => {
+              const fkQtyDriver = Number(row[driverGroup.fkIndex]) || 0;
+              const mQtyDriver = Number(row[driverGroup.mIndex]) || 0;
+              if (fkQtyDriver || mQtyDriver) hasDriverStock = true;
+            });
+            return (fkQty + mQty > 0) || hasDriverStock;
+          });
+          return { ...group, items: filteredItems, count: filteredItems.length };
+        }).filter(g => g.count > 0);
+      }
+      
+      if (!filteredGroups.length) {
+        scroll.innerHTML = `<div class="battery-results-message">لا توجد بطاريات متاحة</div>`;
+        container.classList.remove('hidden');
+        return;
+      }
+      
+      const groupsHtml = filteredGroups.map(group => {
         const groupId = escapeId(group.size);
         return `
           <div class="battery-size-group" data-size="${escapeHtml(group.size)}">
@@ -12034,7 +12086,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">افتخار: ${mQty}</span>`);
         }
       }
-      return badges.length ? badges.join('<br>') : '<span style="color:#ccc;">لا يوجد مخزون رئيسي</span>';
+      return badges.length ? badges.join('<br>') : '<span class="battery-count-badge" style="background:rgba(212,53,53,0.2); border-color:rgba(239,68,68,0.3); color:#ef4444;">غير متوفرة</span>';
     }
 
     const BATTERY_BRAND_INFO = {
@@ -12046,6 +12098,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Amtra': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
       'Emtrac': { country: 'تركية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
+      'EmtracPlus': { country: 'هندية', warranty: { default: 'سنتان' }, dealer: 'البابطين' },
       'Century': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
       'Yuasa': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
       'Exide': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
@@ -12054,8 +12107,9 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'بوستر': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'اوكلي': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'موتو رفت': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
-      'ايفريدي': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
+      'ايفريدي': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'سنشري': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
+      'امتراك بلس': { country: 'هندية', warranty: { default: 'سنتان' }, dealer: 'البابطين' },
       'يواسا': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
       'إكسايد': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' }
     };
@@ -12077,6 +12131,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (upperBrand.includes('HANKOOK')) return 'هانكوك';
       if (upperBrand.includes('OAKLEY')) return 'اوكلي';
       if (upperBrand.includes('AMTRA')) return 'امترا';
+      if (upperBrand.includes('EMTRAC PLUS') || upperBrand.includes('EMTRAC +')) return 'امتراك بلس';
       if (upperBrand.includes('EMTRAC')) return 'Emtrac'; // Keep as is for now
       return brand; // Return original if no match
     }
@@ -12133,9 +12188,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     function renderDriverStock(row) {
-      if (!batterySheetHeaders || !batterySheetHeaders.length) return '';
+      if (!batterySheetHeaders || !batterySheetHeaders.length) return '<span class="battery-count-badge" style="background:rgba(212,53,53,0.2); border-color:rgba(239,68,68,0.3); color:#ef4444;">غير متوفرة</span>';
       const badges = [];
       const driverGroups = getDriverColumnGroups();
+      let hasStock = false;
       driverGroups.forEach(group => {
         const driverNameRaw = group.name || '';
         const name = getDriverName(driverNameRaw);
@@ -12143,13 +12199,14 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const fkQty = Number(row[group.fkIndex]) || 0;
         const mQty = Number(row[group.mIndex]) || 0;
         if (fkQty || mQty) {
+          hasStock = true;
           const parts = [];
           if (fkQty) parts.push(`اف كي:${fkQty}`);
           if (mQty) parts.push(`افتخار:${mQty}`);
           badges.push(`<span class="battery-driver-badge">${escapeHtml(name)} ${parts.join(' | ')}</span>`);
         }
       });
-      return badges.join('');
+      return hasStock ? badges.join('') : '<span class="battery-count-badge" style="background:rgba(212,53,53,0.2); border-color:rgba(239,68,68,0.3); color:#ef4444;">غير متوفرة</span>';
     }
 
     function buildBatteryMessage(row) {
