@@ -12491,23 +12491,20 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return lines.map(line => {
         const cols = line.split(',');
         const price = parseFloat(cols[2]) || 0;
-        const containerLiters = parseFloat(cols[3]) || 0;
+        const liters = parseFloat(cols[3]) || 0;
         const priceLiter = parseFloat(cols[4]) || 0;
-        const contAvailable = parseInt(cols[6]) || 0;
-        const effectivePriceLiter = priceLiter > 0 ? priceLiter : price;
-        const totalAvailableLiters = contAvailable * containerLiters;
+        const effectivePriceLiter = priceLiter > 0 ? priceLiter : (liters > 0 ? price / liters : 0);
         return {
           brand: cols[0] ? cols[0].replace(/"/g, '') : '',
           type: cols[1] ? cols[1].replace(/"/g, '') : '',
           price: price,
-          containerLiters: containerLiters,
+          liters: liters,
           priceLiter: priceLiter,
           effectivePriceLiter: effectivePriceLiter,
           country: cols[5] ? cols[5].replace(/"/g, '') : '',
-          contAvailable: contAvailable,
-          totalAvailableLiters: totalAvailableLiters
+          contAvailable: parseInt(cols[6]) || 0
         };
-      }).filter(oil => oil.brand && oil.price > 0 && oil.contAvailable > 0 && oil.containerLiters > 0);
+      }).filter(oil => oil.brand);
     }
 
     function oilFilter_translateBrand(brand) {
@@ -12633,7 +12630,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       oilFilter_currentStep = 'results';
       const contentArea = document.getElementById('contentArea');
       const car = oilFilter_selectedCar;
-      const availableOils = car ? oilFilter_stockData.filter(oil => oil.totalAvailableLiters >= car.liters) : [];
+      const availableOils = car ? oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters) : [];
 
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
@@ -12652,7 +12649,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <div class="oil-card-details">
               <p>اللزوجة: ${escapeHtml(oil.type)}</p>
               <p>الكمية: ${car.liters} لتر</p>
-              <p>المتوفر: ${oil.contAvailable} عبوات × ${oil.containerLiters} لتر = ${oil.totalAvailableLiters.toFixed(2)} لتر</p>
+              <p>المتوفر: ${oil.contAvailable} عبوة</p>
               <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
             </div>
             <button class="btn-primary oil-copy-btn" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
@@ -12702,7 +12699,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       oilFilter_liters = parseFloat(document.getElementById('manualLiters').value) || 0;
       oilFilter_currentStep = 'manualstep2';
       const contentArea = document.getElementById('contentArea');
-      const viscosities = [...new Set(oilFilter_stockData.filter(oil => oil.totalAvailableLiters >= oilFilter_liters).map(oil => oil.type))];
+      const viscosities = [...new Set(oilFilter_stockData.filter(oil => oil.contAvailable >= oilFilter_liters).map(oil => oil.type))];
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
@@ -12727,7 +12724,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function oilFilter_manualStep3() {
       oilFilter_currentStep = 'manualstep3';
       const contentArea = document.getElementById('contentArea');
-      const oils = oilFilter_stockData.filter(oil => oil.type === oilFilter_selectedViscosity && oil.totalAvailableLiters >= oilFilter_liters);
+      const oils = oilFilter_stockData.filter(oil => oil.type === oilFilter_selectedViscosity && oil.contAvailable >= oilFilter_liters);
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
