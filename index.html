@@ -12649,7 +12649,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <div class="oil-card-details">
               <p>اللزوجة: ${escapeHtml(oil.type)}</p>
               <p>الكمية: ${car.liters} لتر</p>
-              <p>المتوفر: ${oil.contAvailable} عبوة</p>
+              <p>المتوفر: ${oil.contAvailable} لتر</p>
               <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
             </div>
             <button class="btn-primary oil-copy-btn" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
