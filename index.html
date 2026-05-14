@@ -11636,8 +11636,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         sizeList.classList.remove('hidden');
         return;
       }
+      sizeList.style.display = 'flex';
+      sizeList.style.flexWrap = 'wrap';
+      sizeList.style.gap = '6px';
       sizeList.innerHTML = filtered.slice(0, 80).map(size => `
-        <button type="button" class="btn-option" style="width:100%; text-align:right; margin:4px 0;" data-value="${escapeHtml(size)}">
+        <button type="button" class="btn-option" style="display:inline-block; width:auto; text-align:right; margin:3px; padding:4px 6px;" data-value="${escapeHtml(size)}">
           ${highlightMatch(size, query)}
         </button>
       `).join('');
