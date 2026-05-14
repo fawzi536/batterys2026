@@ -12572,7 +12572,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const brandIndex = findHeaderIndex(headers, ['brand', 'company', 'company name', 'marka', 'ماركة', 'العلامة'], 0);
       const typeIndex = findHeaderIndex(headers, ['type', 'oil type', 'viscosity', 'grade', 'الزيت'], 1);
       const priceIndex = findHeaderIndex(headers, ['price', 'unit price', 'cost', 'سعر', 'price per liter'], 2);
-      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'quantity', 'qty', 'amount', 'الكمية'], 3);
+      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'quantity', 'qty', 'amount', 'الكمية'], 5); // Column F for stock availability
       const priceLiterIndex = findHeaderIndex(headers, ['price per liter', 'price liter', 'price_liter', 'priceLiter', 'سعر للتر'], 4);
       const countryIndex = findHeaderIndex(headers, ['country', 'origin', 'بلد'], 5);
 
