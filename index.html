@@ -1189,6 +1189,64 @@
       font-size: 15px;
     }
 
+    .oil-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .oil-card {
+      background: #1a1a1a;
+      border: 1px solid #F2BC1B;
+      border-radius: 8px;
+      padding: 16px;
+      color: #fff;
+    }
+
+    .oil-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .oil-card-header h4 {
+      margin: 0;
+      color: #F2BC1B;
+    }
+
+    .oil-price {
+      font-size: 18px;
+      font-weight: bold;
+      color: #4ade80;
+    }
+
+    .oil-card-details p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .oil-copy-btn {
+      width: 100%;
+      margin-top: 12px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .oil-copy-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .oil-copy-btn.success {
+      background: #16a34a;
+    }
+
     .driver-filters {
       display: flex;
       flex-wrap: wrap;
@@ -12394,12 +12452,17 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const lines = text.split('\n').slice(1); // Skip header
       return lines.map(line => {
         const cols = line.split(',');
+        const price = parseFloat(cols[2]) || 0;
+        const liters = parseFloat(cols[3]) || 0;
+        const priceLiter = parseFloat(cols[4]) || 0;
+        const effectivePriceLiter = priceLiter > 0 ? priceLiter : (liters > 0 ? price / liters : 0);
         return {
           brand: cols[0] ? cols[0].replace(/"/g, '') : '',
           type: cols[1] ? cols[1].replace(/"/g, '') : '',
-          price: parseFloat(cols[2]) || 0,
-          liters: parseFloat(cols[3]) || 0,
-          priceLiter: parseFloat(cols[4]) || 0,
+          price: price,
+          liters: liters,
+          priceLiter: priceLiter,
+          effectivePriceLiter: effectivePriceLiter,
           country: cols[5] ? cols[5].replace(/"/g, '') : '',
           contAvailable: parseInt(cols[6]) || 0
         };
@@ -12531,7 +12594,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const car = oilFilter_selectedCar;
       const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters);
 
-      availableOils.sort((a, b) => (a.priceLiter * car.liters) - (b.priceLiter * car.liters));
+      availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
@@ -12539,29 +12602,29 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <h3 class="section-title">الزيوت المتاحة لـ ${escapeHtml(car.carModel)}</h3>
             <button class="btn-back" onclick="oilFilter_showFilterSelection()">رجوع</button>
           </div>
-          <div class="table-scroll" style="max-height:400px;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>الماركة</th>
-                  <th>اللزوجة</th>
-                  <th>السعر لكل لتر</th>
-                  <th>الإجمالي</th>
-                  <th>الإجراء</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${availableOils.map(oil => `
-                  <tr>
-                    <td>${escapeHtml(oilFilter_translateBrand(oil.brand))}</td>
-                    <td>${escapeHtml(oil.type)}</td>
-                    <td>${oil.priceLiter} د.ك</td>
-                    <td>${(oil.priceLiter * car.liters + oilFilter_filterPrice + oilFilter_servicePrice).toFixed(2)} د.ك</td>
-                    <td><button class="btn-primary" onclick="oilFilter_selectOil(${JSON.stringify(oil).replace(/"/g, '&quot;')})">اختيار</button></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+          <div class="oil-results-grid">
+            ${availableOils.map(oil => {
+              const oilTotal = oil.effectivePriceLiter * car.liters;
+              const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
+              const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك
+
+مناسب لسيارة: ${oilFilter_getArabicCarName(car.carModel)}`;
+              return `
+                <div class="oil-card">
+                  <div class="oil-card-header">
+                    <h4>${escapeHtml(oilFilter_translateBrand(oil.brand))}</h4>
+                    <span class="oil-price">${grandTotal.toFixed(2)} د.ك</span>
+                  </div>
+                  <div class="oil-card-details">
+                    <p>اللزوجة: ${escapeHtml(oil.type)}</p>
+                    <p>الكمية: ${car.liters} لتر</p>
+                    <p>المتوفر: ${oil.contAvailable} عبوة</p>
+                    <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
+                  </div>
+                  <button class="btn-primary oil-copy-btn" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
       `;
@@ -12685,10 +12748,12 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const contentArea = document.getElementById('contentArea');
       const oil = oilFilter_selectedOil;
       const car = oilFilter_selectedCar;
-      const oilTotal = oil.priceLiter * (car ? car.liters : oilFilter_liters);
+      const liters = car ? car.liters : oilFilter_liters;
+      const effectivePriceLiter = oil.effectivePriceLiter;
+      const oilTotal = effectivePriceLiter * liters;
       const total = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
 
-      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car ? car.liters : oilFilter_liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك
+      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك
 
 مناسب لسيارة: ${car ? oilFilter_getArabicCarName(car.carModel) : 'غير محدد'}`;
 
@@ -12700,7 +12765,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           </div>
           <div class="invoice-details">
             <p><strong>الزيت:</strong> ${escapeHtml(oilFilter_translateBrand(oil.brand))} - ${escapeHtml(oil.type)}</p>
-            <p><strong>الكمية:</strong> ${car ? car.liters : oilFilter_liters} لتر</p>
+            <p><strong>الكمية:</strong> ${liters} لتر</p>
             <p><strong>سعر الزيت:</strong> ${oilTotal.toFixed(2)} د.ك</p>
             <p><strong>الفلتر:</strong> ${oilFilter_filterPrice} د.ك</p>
             <p><strong>الخدمة الميكانيكية:</strong> ${oilFilter_servicePrice} د.ك</p>
@@ -12747,13 +12812,26 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
 
     function oilFilter_copyMessage(message) {
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(message).catch(() => {
+        navigator.clipboard.writeText(message).then(() => {
+          oilFilter_showCopySuccess();
+        }).catch(() => {
           oilFilter_fallbackCopyTextToClipboard(message);
         });
       } else {
         oilFilter_fallbackCopyTextToClipboard(message);
       }
-      alert('تم نسخ الرسالة');
+    }
+
+    function oilFilter_showCopySuccess() {
+      const btns = document.querySelectorAll('.oil-copy-btn');
+      btns.forEach(btn => {
+        btn.classList.add('success');
+        btn.textContent = 'تم النسخ!';
+        setTimeout(() => {
+          btn.classList.remove('success');
+          btn.textContent = 'نسخ العرض';
+        }, 2000);
+      });
     }
 
     function oilFilter_fallbackCopyTextToClipboard(text) {
@@ -12764,8 +12842,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       ta.select();
       try {
         document.execCommand('copy');
+        oilFilter_showCopySuccess();
       } catch (e) {
         console.warn('Fallback copy failed', e);
+        alert('فشل في النسخ');
       }
       document.body.removeChild(ta);
     }
