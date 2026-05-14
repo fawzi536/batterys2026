@@ -11852,12 +11852,13 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       
       const rowsHtml = filteredItems.map((item, index) => {
         const row = item.row;
-        const brand = getArabicBrandName(row[1] || 'غير معروف');
+        const normalizedBrand = normalizeBrandName(row[1] || '');
+        const brand = getArabicBrandName(normalizedBrand);
         const size = row[0] || 'غير معروف';
         const salePrice = (row[4] || row[3] || '').trim() || '-';
         const countOfID = carMake && carModel && carYear ? getCountOfIDForBattery(carMake, carModel, carYear, size) : 0;
-        const warranty = getWarranty(brand, size);
-        const brandInfo = getBrandInfo(brand);
+        const warranty = getWarranty(normalizedBrand, size);
+        const brandInfo = getBrandInfo(normalizedBrand);
         const duplicateBadge = `<span class="battery-count-badge">${escapeHtml(size)}</span>`;
         const driverStockHtml = renderDriverStock(row);
         return `
@@ -12017,11 +12018,12 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       }
       return items.map((item, index) => {
         const row = item.row;
-        const brand = getArabicBrandName(row[1] || 'غير معروف');
+        const normalizedBrand = normalizeBrandName(row[1] || '');
+        const brand = getArabicBrandName(normalizedBrand);
         const salePrice = (row[4] || row[3] || '').trim() || '-';
         const countOfID = carMake && carModel && carYear ? getCountOfIDForBattery(carMake, carModel, carYear, groupSize) : 0;
-        const warranty = getWarranty(brand, groupSize);
-        const brandInfo = getBrandInfo(brand);
+        const warranty = getWarranty(normalizedBrand, groupSize);
+        const brandInfo = getBrandInfo(normalizedBrand);
         const duplicateBadge = `<span class="battery-count-badge">${escapeHtml(groupSize)}</span>`;
         const driverStockHtml = renderDriverStock(row);
         return `
