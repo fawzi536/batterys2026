@@ -12621,6 +12621,22 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return translations[brand] || brand;
     }
 
+    function oilFilter_parseViscosityList(value) {
+      if (!value) return [];
+      return value
+        .split(/[\/%,؛،\s]+/)
+        .map(v => v.trim().toUpperCase())
+        .filter(Boolean);
+    }
+
+    function oilFilter_carMatchesViscosity(car, oil) {
+      if (!car || !car.oilType) return true;
+      const allowed = oilFilter_parseViscosityList(car.oilType);
+      if (!allowed.length) return true;
+      const oilType = (oil.type || '').toUpperCase().trim();
+      return allowed.some(visc => oilType === visc || oilType.includes(visc));
+    }
+
     function oilFilter_getArabicCarName(carModel) {
       // Assuming carModel is already in Arabic or extract if needed
       return carModel;
@@ -12729,7 +12745,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         return;
       }
 
-      const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters && oil.contAvailable > 0);
+      const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters && oil.contAvailable > 0 && oilFilter_carMatchesViscosity(car, oil));
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
       const resultsHtml = availableOils.length > 0 ? availableOils.map(oil => {
