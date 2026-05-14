@@ -12068,10 +12068,15 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const fkQty = Number(row[5]) || 0;
       const mQty = Number(row[6]) || 0;
       const badges = [];
-      if (brand.includes('VARTA') || brand.includes('HANKOOK')) {
+      if (brand.includes('VARTA')) {
         const total = fkQty + mQty;
         if (total > 0) {
           badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">فارتا: ${total}</span>`);
+        }
+      } else if (brand.includes('HANKOOK')) {
+        const total = fkQty + mQty;
+        if (total > 0) {
+          badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">هانكوك: ${total}</span>`);
         }
       } else if (brand.includes('EMTRAC')) {
         const total = fkQty + mQty;
@@ -12092,7 +12097,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     const BATTERY_BRAND_INFO = {
       'Motorcraft': { country: 'أمريكية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
       'Varta': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
-      'Hankook': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
+      'Hankook': { country: 'كوريه', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
+      'هانكوك': { country: 'كوريه', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
       'Booster': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Oakley': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
@@ -12125,7 +12131,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (upperBrand.includes('MOTER CRAFT') || upperBrand.includes('MOTORCRAFT')) return 'موتوركرافت';
       if (upperBrand.includes('MOTO RAFT') || upperBrand.includes('MOTORAFT')) return 'موتو رفت';
       if (upperBrand.includes('VARTA')) return 'فارتا';
-      if (upperBrand.includes('HANKOOK')) return 'فارتا';
+      if (upperBrand.includes('HANKOOK')) return 'هانكوك';
       if (upperBrand.includes('BOSSTER') || upperBrand.includes('BOOSTER')) return 'بوستر';
       if (upperBrand.includes('EVEREADY')) return 'ايفريدي';
       if (upperBrand.includes('HANKOOK')) return 'هانكوك';
@@ -12150,6 +12156,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (normalized === 'موتوركرافت') return 'موتوركرافت';
       if (normalized === 'موتو رفت') return 'موتو رفت';
       if (normalized === 'فارتا') return 'فارتا';
+      if (normalized === 'هانكوك') return 'هانكوك';
       if (normalized === 'بوستر') return 'بوستر';
       if (normalized === 'ايفريدي') return 'ايفريدي';
       if (normalized === 'اوكلي') return 'اوكلي';
