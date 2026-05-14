@@ -12632,20 +12632,20 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return translations[brand] || brand;
     }
 
-    function oilFilter_normalizeViscosity(value) {
+    function oilFilter_normalizeViscosityToken(value) {
       if (!value) return '';
       return String(value)
         .trim()
         .toUpperCase()
-        .replace(/[-\s]/g, '')
+        .replace(/\s+/g, '')
         .replace(/[^A-Z0-9W]/g, '');
     }
 
     function oilFilter_parseViscosityList(value) {
       if (!value) return [];
-      return value
+      return String(value)
         .split(/[\/%,؛،\s]+/)
-        .map(v => oilFilter_normalizeViscosity(v))
+        .map(v => oilFilter_normalizeViscosityToken(v))
         .filter(Boolean);
     }
 
@@ -12653,8 +12653,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (!car || !car.oilType) return true;
       const allowed = oilFilter_parseViscosityList(car.oilType);
       if (!allowed.length) return true;
-      const oilType = oilFilter_normalizeViscosity(oil.type);
-      return allowed.some(visc => oilType === visc || oilType.includes(visc));
+      const oilOptions = oilFilter_parseViscosityList(oil.type);
+      return oilOptions.some(oilVisc => allowed.some(allowedVisc => oilVisc === allowedVisc));
     }
 
     function oilFilter_getArabicCarName(carModel) {
