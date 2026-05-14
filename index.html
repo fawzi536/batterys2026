@@ -11675,7 +11675,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         return;
       }
       setBatteryError('');
-      const matching = (batterySheetData || []).filter(row => normalizeText(row[0]) === normalizeText(sizeValue) && (currentUserRole === 'Admin' || hasAnyStock(row)));
+      const matching = (batterySheetData || []).filter(row => normalizeText(row[0]) === normalizeText(sizeValue));
       if (!matching.length) {
         renderEmptyBatteryResultsMessage(`لم نوجد نتائج للمقاس: ${sizeValue}`);
         return;
