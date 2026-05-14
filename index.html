@@ -12794,10 +12794,32 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     function oilFilter_manualStep2() {
-      oilFilter_liters = parseFloat(document.getElementById('manualLiters').value) || 0;
+      oilFilter_liters = toNumber(document.getElementById('manualLiters').value);
       oilFilter_currentStep = 'manualstep2';
       const contentArea = document.getElementById('contentArea');
-      const viscosities = [...new Set(oilFilter_stockData.filter(oil => oil.contAvailable >= oilFilter_liters).map(oil => oil.type))];
+      const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= oilFilter_liters && oil.contAvailable > 0);
+      const viscosities = [...new Set(availableOils.map(oil => oil.type))].filter(Boolean);
+
+      if (!oilFilter_liters) {
+        contentArea.innerHTML = `
+          <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
+            <p>أدخل عدد اللترات أولاً ثم اضغط التالي.</p>
+            <button class="btn-primary" onclick="oilFilter_showManualCalculator()">رجوع</button>
+          </div>
+        `;
+        return;
+      }
+
+      if (!viscosities.length) {
+        contentArea.innerHTML = `
+          <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
+            <p>لا توجد زيوت متاحة للكمية ${oilFilter_liters} لتر.</p>
+            <p>تحقق من كمية المخزون في جدول Stock أو جرب كمية أقل.</p>
+            <button class="btn-primary" onclick="oilFilter_showManualCalculator()">رجوع</button>
+          </div>
+        `;
+        return;
+      }
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
@@ -12806,7 +12828,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <button class="btn-back" onclick="oilFilter_showManualCalculator()">رجوع</button>
           </div>
           <div class="service-options">
-            ${viscosities.map(v => `<button class="btn-option" data-viscosity="${v}">${v}</button>`).join('')}
+            ${viscosities.map(v => `<button class="btn-option" data-viscosity="${escapeHtml(v)}">${escapeHtml(v)}</button>`).join('')}
           </div>
         </div>
       `;
@@ -12824,6 +12846,16 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const contentArea = document.getElementById('contentArea');
       const oils = oilFilter_stockData.filter(oil => oil.type === oilFilter_selectedViscosity && oil.contAvailable >= oilFilter_liters);
 
+      if (!oils.length) {
+        contentArea.innerHTML = `
+          <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
+            <p>لا توجد ماركات متاحة للزيت ${escapeHtml(oilFilter_selectedViscosity)} والكمية ${oilFilter_liters} لتر.</p>
+            <button class="btn-primary" onclick="oilFilter_manualStep2()">رجوع</button>
+          </div>
+        `;
+        return;
+      }
+
       contentArea.innerHTML = `
         <div class="form-section full-width">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
@@ -12831,14 +12863,15 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <button class="btn-back" onclick="oilFilter_manualStep2()">رجوع</button>
           </div>
           <div class="service-options">
-            ${oils.map(oil => `<button class="btn-option" data-oil="${JSON.stringify(oil).replace(/"/g, '&quot;')}">${oilFilter_translateBrand(oil.brand)}</button>`).join('')}
+            ${oils.map((oil, index) => `<button class="btn-option" data-oil-index="${index}">${escapeHtml(oilFilter_translateBrand(oil.brand))}</button>`).join('')}
           </div>
         </div>
       `;
 
-      document.querySelectorAll('[data-oil]').forEach(btn => {
+      document.querySelectorAll('[data-oil-index]').forEach(btn => {
         btn.onclick = () => {
-          oilFilter_selectedOil = JSON.parse(btn.dataset.oil);
+          const index = parseInt(btn.dataset.oilIndex, 10);
+          oilFilter_selectedOil = oils[index];
           oilFilter_manualStep4();
         };
       });
