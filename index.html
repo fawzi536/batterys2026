@@ -12211,13 +12211,17 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         if (!name) return;
         const fkQty = Number(row[group.fkIndex]) || 0;
         const mQty = Number(row[group.mIndex]) || 0;
-        if (fkQty || mQty) {
+        const totalQty = fkQty + mQty;
+        if (totalQty > 0) {
           hasStock = true;
-          const parts = [];
-          if (fkQty) parts.push(`اف كي:${fkQty}`);
-          if (mQty) parts.push(`افتخار:${mQty}`);
-          const displayName = isVartaOrHankook ? 'فارتاا' : name;
-          badges.push(`<span class="battery-driver-badge">${escapeHtml(displayName)} ${parts.join(' | ')}</span>`);
+          if (isVartaOrHankook) {
+            badges.push(`<span class="battery-driver-badge">${escapeHtml(name)} فارتا : ${totalQty}</span>`);
+          } else {
+            const parts = [];
+            if (fkQty) parts.push(`اف كي:${fkQty}`);
+            if (mQty) parts.push(`افتخار:${mQty}`);
+            badges.push(`<span class="battery-driver-badge">${escapeHtml(name)} ${parts.join(' | ')}</span>`);
+          }
         }
       });
       return hasStock ? badges.join('') : '<span class="battery-count-badge" style="background:rgba(212,53,53,0.2); border-color:rgba(239,68,68,0.3); color:#ef4444;">غير متوفرة</span>';
