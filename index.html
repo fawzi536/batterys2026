@@ -12643,18 +12643,33 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
 
     function oilFilter_parseViscosityList(value) {
       if (!value) return [];
+      // Split by forward slash first as it's the primary separator
+      // Then clean up each token
       return String(value)
-        .split(/[\/%,؛،\s]+/)
+        .split(/\s*\/\s*/)  // Split by forward slash with optional whitespace
         .map(v => oilFilter_normalizeViscosityToken(v))
-        .filter(Boolean);
+        .filter(v => v && v.length > 0);  // Filter empty strings
     }
 
     function oilFilter_carMatchesViscosity(car, oil) {
+      // If car or oil type is missing, allow match (fallback behavior)
       if (!car || !car.oilType) return true;
-      const allowed = oilFilter_parseViscosityList(car.oilType);
-      if (!allowed.length) return true;
-      const oilOptions = oilFilter_parseViscosityList(oil.type);
-      return oilOptions.some(oilVisc => allowed.some(allowedVisc => oilVisc === allowedVisc));
+      if (!oil || !oil.type) return false;
+      
+      // Parse the allowed viscosities from the car's oil type
+      const allowedViscosities = oilFilter_parseViscosityList(car.oilType);
+      
+      // If no viscosities specified for car, allow all oils
+      if (!allowedViscosities || allowedViscosities.length === 0) return true;
+      
+      // Parse the oil's viscosities (it might contain multiple values too)
+      const oilViscosities = oilFilter_parseViscosityList(oil.type);
+      
+      // If oil has no valid viscosity, don't match
+      if (!oilViscosities || oilViscosities.length === 0) return false;
+      
+      // Check if any oil viscosity matches any allowed viscosity
+      return oilViscosities.some(oilVisc => allowedViscosities.includes(oilVisc));
     }
 
     function oilFilter_getArabicCarName(carModel) {
@@ -12772,8 +12787,35 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         return;
       }
 
-      const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters && oil.contAvailable > 0 && oilFilter_carMatchesViscosity(car, oil));
+      // Log for debugging
+      console.log('=== OIL FILTER MATCHING DEBUG ===');
+      console.log('Selected Car:', car);
+      console.log('Stock Data:', oilFilter_stockData);
+
+      // Filter oils: must have enough quantity AND match viscosity
+      const availableOils = oilFilter_stockData
+        .filter(oil => {
+          // Check quantity
+          const hasEnoughQuantity = oil.contAvailable >= car.liters && oil.contAvailable > 0;
+          
+          // Check viscosity match
+          const viscosityMatches = oilFilter_carMatchesViscosity(car, oil);
+          
+          console.log(`Oil: ${oil.brand} (${oil.type})`, {
+            hasEnoughQuantity,
+            contAvailable: oil.contAvailable,
+            requiredLiters: car.liters,
+            viscosityMatches,
+            carOilType: car.oilType
+          });
+          
+          return hasEnoughQuantity && viscosityMatches;
+        });
+
+      // Sort by price (lowest to highest)
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
+
+      console.log('Available oils after filter:', availableOils);
 
       const resultsHtml = availableOils.length > 0 ? availableOils.map(oil => {
         const oilTotal = oil.effectivePriceLiter * car.liters;
@@ -12798,8 +12840,13 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         `;
       }).join('') : `
           <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
-            <p>لا توجد زيوت متاحة حالياً للكمية المطلوبة.</p>
-            <p>تأكد من تحميل البيانات أو اختر سيارة/كمية أخرى.</p>
+            <p>❌ لا توجد زيوت متاحة حالياً للكمية المطلوبة (${car.liters} لتر) واللزوجة المطلوبة (${car.oilType}).</p>
+            <p>تأكد من:</p>
+            <ul style="text-align:right;">
+              <li>توفر الكمية المطلوبة في المخزن</li>
+              <li>مطابقة اللزوجة مع الزيوت المتوفرة</li>
+              <li>تحديث بيانات المخزن (Sheet: Stock)</li>
+            </ul>
           </div>
         `;
 
@@ -12841,7 +12888,16 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       oilFilter_currentStep = 'manualstep2';
       const contentArea = document.getElementById('contentArea');
       const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= oilFilter_liters && oil.contAvailable > 0);
-      const viscosities = [...new Set(availableOils.map(oil => oil.type))].filter(Boolean);
+      
+      // Extract unique viscosities from all available oils
+      // Break down multi-viscosity oils into individual viscosities
+      const viscositySet = new Set();
+      availableOils.forEach(oil => {
+        const viscs = oilFilter_parseViscosityList(oil.type);
+        viscs.forEach(v => viscositySet.add(v));
+      });
+      
+      const viscosities = Array.from(viscositySet).filter(Boolean).sort();
 
       if (!oilFilter_liters) {
         contentArea.innerHTML = `
@@ -12856,7 +12912,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (!viscosities.length) {
         contentArea.innerHTML = `
           <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
-            <p>لا توجد زيوت متاحة للكمية ${oilFilter_liters} لتر.</p>
+            <p>❌ لا توجد زيوت متاحة للكمية ${oilFilter_liters} لتر.</p>
             <p>تحقق من كمية المخزون في جدول Stock أو جرب كمية أقل.</p>
             <button class="btn-primary" onclick="oilFilter_showManualCalculator()">رجوع</button>
           </div>
@@ -12887,12 +12943,23 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function oilFilter_manualStep3() {
       oilFilter_currentStep = 'manualstep3';
       const contentArea = document.getElementById('contentArea');
-      const oils = oilFilter_stockData.filter(oil => oil.type === oilFilter_selectedViscosity && oil.contAvailable >= oilFilter_liters);
+      
+      // Parse selected viscosity for matching against oils
+      const selectedViscs = oilFilter_parseViscosityList(oilFilter_selectedViscosity);
+      
+      // Filter oils that contain the selected viscosity
+      const oils = oilFilter_stockData.filter(oil => {
+        if (oil.contAvailable < oilFilter_liters) return false;
+        
+        // Parse oil viscosities and check if any match the selected viscosity
+        const oilViscs = oilFilter_parseViscosityList(oil.type);
+        return oilViscs.some(oilVisc => selectedViscs.includes(oilVisc));
+      });
 
       if (!oils.length) {
         contentArea.innerHTML = `
           <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
-            <p>لا توجد ماركات متاحة للزيت ${escapeHtml(oilFilter_selectedViscosity)} والكمية ${oilFilter_liters} لتر.</p>
+            <p>❌ لا توجد ماركات متاحة للزيت ${escapeHtml(oilFilter_selectedViscosity)} والكمية ${oilFilter_liters} لتر.</p>
             <button class="btn-primary" onclick="oilFilter_manualStep2()">رجوع</button>
           </div>
         `;
