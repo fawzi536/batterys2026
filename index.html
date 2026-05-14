@@ -7153,8 +7153,8 @@
                   document.getElementById('mechAreaSection').classList.remove('hidden');
                   loadAreaOptionsDatalist('خدمات ميكانيكية', [8, 9, 10, 12, 13, 14], calculateMechanicalPrice);
                 } else if (formData.oilSource === 'ours') {
-                  // Open external oil website
-                  openFullscreenIframe('https://oilfilterporcarspor.vercel.app/', 'زيت وفلتر');
+                  // Render oil filter interface internally
+                  renderOilFilterInterface();
                 }
               };
             });
@@ -12313,6 +12313,461 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       } catch (e) {
         console.warn('Clipboard copy failed', e);
       }
+    }
+  </script>
+
+  <!-- Oil Filter Interface Functions -->
+  <script>
+    let oilFilter_carsData = [];
+    let oilFilter_stockData = [];
+    let oilFilter_selectedCar = null;
+    let oilFilter_filterPrice = 0;
+    let oilFilter_servicePrice = 15;
+    let oilFilter_liters = 0;
+    let oilFilter_selectedViscosity = '';
+    let oilFilter_selectedOil = null;
+    let oilFilter_currentStep = 'main';
+
+    function renderOilFilterInterface() {
+      oilFilter_currentStep = 'main';
+      const contentArea = document.getElementById('contentArea');
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <h3 class="section-title">زيت وفلتر</h3>
+          <div class="service-options">
+            <button class="btn-option" data-action="carlist">قائمة السيارات</button>
+            <button class="btn-option" data-action="manual">الحاسبة اليدوية</button>
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll('[data-action]').forEach(btn => {
+        btn.onclick = () => {
+          if (btn.dataset.action === 'carlist') {
+            oilFilter_showCarList();
+          } else if (btn.dataset.action === 'manual') {
+            oilFilter_showManualCalculator();
+          }
+        };
+      });
+
+      oilFilter_loadData();
+    }
+
+    function oilFilter_loadData() {
+      // Load cars data
+      fetch('https://docs.google.com/spreadsheets/d/1-hVGrK0SqiLgXV_zaqhh2bqYCjjr4Q28jzWU8gG6jTU/gviz/tq?tqx=out:csv&sheet=Cars')
+        .then(response => response.text())
+        .then(text => {
+          oilFilter_carsData = oilFilter_processCarsData(text);
+        })
+        .catch(err => console.error('Error loading cars data:', err));
+
+      // Load stock data
+      fetch('https://docs.google.com/spreadsheets/d/1ax4pCBDTm6Vkq-MZjmmOY1dgwKCUQS5x1GeffkUYOzI/gviz/tq?tqx=out:csv&sheet=Stock')
+        .then(response => response.text())
+        .then(text => {
+          oilFilter_stockData = oilFilter_processStockData(text);
+        })
+        .catch(err => console.error('Error loading stock data:', err));
+
+      // Refresh every 30 seconds
+      setInterval(() => {
+        oilFilter_loadData();
+      }, 30000);
+    }
+
+    function oilFilter_processCarsData(text) {
+      const lines = text.split('\n').slice(1); // Skip header
+      return lines.map(line => {
+        const cols = line.split(',');
+        return {
+          carModel: cols[0] ? cols[0].replace(/"/g, '') : '',
+          oilType: cols[1] ? cols[1].replace(/"/g, '') : '',
+          liters: parseFloat(cols[2]) || 0,
+          majorService: parseFloat(cols[3]) || 0
+        };
+      }).filter(car => car.carModel);
+    }
+
+    function oilFilter_processStockData(text) {
+      const lines = text.split('\n').slice(1); // Skip header
+      return lines.map(line => {
+        const cols = line.split(',');
+        return {
+          brand: cols[0] ? cols[0].replace(/"/g, '') : '',
+          type: cols[1] ? cols[1].replace(/"/g, '') : '',
+          price: parseFloat(cols[2]) || 0,
+          liters: parseFloat(cols[3]) || 0,
+          priceLiter: parseFloat(cols[4]) || 0,
+          country: cols[5] ? cols[5].replace(/"/g, '') : '',
+          contAvailable: parseInt(cols[6]) || 0
+        };
+      }).filter(oil => oil.brand);
+    }
+
+    function oilFilter_translateBrand(brand) {
+      const translations = {
+        'CEPSA GENUINE': 'سيسبا اسباني 🇪🇸',
+        'AC DELCO': 'اسي ديلكو امريكي 🇺🇸',
+        'MOPAR': 'موبار امريكي 🇺🇸',
+        'GAZPROMNEFT': 'غازبروم نفط روسي 🇷🇺',
+        'MOBIL ONE': 'موبيل ون اوربي 🇪🇺',
+        'SHELL HELIX ULTRA': 'شل هيليكس ألترا امريكي 🇺🇸',
+        'RAVENOL': 'ريفنول الماني 🇩🇪',
+        'CASTROL': 'كاسترول بريطاني 🇬🇧',
+        'WAGNER': 'واجنر الماني 🇩🇪',
+        'DUCKHAMS': 'داكهام بريطاني 🇬🇧',
+        'BIZOL': 'بيزول الماني 🇩🇪',
+        'VICTOR': 'فيكتور ألماني 🇩🇪',
+        'LIQUI MOLY': 'ليكي مولي الماني 🇩🇪',
+        'MOTORCRAFT': 'موتركرافت امريكي 🇺🇸',
+        'G-ENERGY': 'جي-إنرجي إيطالي 🇮🇹',
+        'TOTAL': 'توتال فرنسي 🇫🇷',
+        'TOYOTA BLUE': 'تويوتا بلو ياباني 🇯🇵',
+        'TOYOTA': 'تويوتا ياباني 🇯🇵',
+        'LEXUS': 'لكزس ياباني 🇯🇵'
+      };
+      return translations[brand] || brand;
+    }
+
+    function oilFilter_getArabicCarName(carModel) {
+      // Assuming carModel is already in Arabic or extract if needed
+      return carModel;
+    }
+
+    function oilFilter_showCarList() {
+      oilFilter_currentStep = 'carlist';
+      const contentArea = document.getElementById('contentArea');
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">اختيار السيارة</h3>
+            <button class="btn-back" onclick="renderOilFilterInterface()">رجوع</button>
+          </div>
+          <input type="text" id="oilFilterCarSearch" placeholder="ابحث عن السيارة..." class="form-control" style="margin-bottom:12px;">
+          <div class="table-scroll" style="max-height:400px;">
+            <table class="data-table" id="oilFilterCarTable">
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      oilFilter_renderCarTable();
+
+      document.getElementById('oilFilterCarSearch').oninput = () => {
+        oilFilter_renderCarTable();
+      };
+    }
+
+    function oilFilter_renderCarTable() {
+      const tbody = document.querySelector('#oilFilterCarTable tbody');
+      const search = document.getElementById('oilFilterCarSearch').value.toLowerCase();
+      const filtered = oilFilter_carsData.filter(car => car.carModel.toLowerCase().includes(search));
+
+      tbody.innerHTML = '';
+      filtered.forEach(car => {
+        const tr = document.createElement('tr');
+        tr.onclick = () => oilFilter_selectCar(car);
+        tr.innerHTML = `
+          <td>${escapeHtml(car.carModel)}</td>
+          <td>${car.majorService > 0 ? '<button class="btn-info" onclick="oilFilter_showMajorService(event, ' + car.majorService + ')">ℹ️</button>' : ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function oilFilter_selectCar(car) {
+      oilFilter_selectedCar = car;
+      oilFilter_showFilterSelection();
+    }
+
+    function oilFilter_showFilterSelection() {
+      oilFilter_currentStep = 'filterselect';
+      const contentArea = document.getElementById('contentArea');
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">اختيار نوع الفلتر</h3>
+            <button class="btn-back" onclick="oilFilter_showCarList()">رجوع</button>
+          </div>
+          <div class="service-options">
+            <button class="btn-option" data-filter="german">ألمانية (12 د.ك)</button>
+            <button class="btn-option" data-filter="other">أمريكية/يابانية/كورية (8 د.ك)</button>
+            <button class="btn-option" data-filter="custom">أخرى (أدخل السعر)</button>
+          </div>
+          <div id="customFilterPrice" class="hidden" style="margin-top:12px;">
+            <input type="number" id="customFilterInput" placeholder="أدخل سعر الفلتر" class="form-control">
+            <button class="btn-primary" onclick="oilFilter_setCustomFilter()">تأكيد</button>
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.onclick = () => {
+          if (btn.dataset.filter === 'german') {
+            oilFilter_filterPrice = 12;
+            oilFilter_showResults();
+          } else if (btn.dataset.filter === 'other') {
+            oilFilter_filterPrice = 8;
+            oilFilter_showResults();
+          } else if (btn.dataset.filter === 'custom') {
+            document.getElementById('customFilterPrice').classList.remove('hidden');
+          }
+        };
+      });
+    }
+
+    function oilFilter_setCustomFilter() {
+      const price = parseFloat(document.getElementById('customFilterInput').value) || 0;
+      oilFilter_filterPrice = price;
+      oilFilter_showResults();
+    }
+
+    function oilFilter_showResults() {
+      oilFilter_currentStep = 'results';
+      const contentArea = document.getElementById('contentArea');
+      const car = oilFilter_selectedCar;
+      const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters);
+
+      availableOils.sort((a, b) => (a.priceLiter * car.liters) - (b.priceLiter * car.liters));
+
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">الزيوت المتاحة لـ ${escapeHtml(car.carModel)}</h3>
+            <button class="btn-back" onclick="oilFilter_showFilterSelection()">رجوع</button>
+          </div>
+          <div class="table-scroll" style="max-height:400px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>الماركة</th>
+                  <th>اللزوجة</th>
+                  <th>السعر لكل لتر</th>
+                  <th>الإجمالي</th>
+                  <th>الإجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${availableOils.map(oil => `
+                  <tr>
+                    <td>${escapeHtml(oilFilter_translateBrand(oil.brand))}</td>
+                    <td>${escapeHtml(oil.type)}</td>
+                    <td>${oil.priceLiter} د.ك</td>
+                    <td>${(oil.priceLiter * car.liters + oilFilter_filterPrice + oilFilter_servicePrice).toFixed(2)} د.ك</td>
+                    <td><button class="btn-primary" onclick="oilFilter_selectOil(${JSON.stringify(oil).replace(/"/g, '&quot;')})">اختيار</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function oilFilter_selectOil(oil) {
+      oilFilter_selectedOil = oil;
+      oilFilter_showInvoice();
+    }
+
+    function oilFilter_showManualCalculator() {
+      oilFilter_currentStep = 'manual';
+      const contentArea = document.getElementById('contentArea');
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">الحاسبة اليدوية - خطوة 1: عدد اللترات</h3>
+            <button class="btn-back" onclick="renderOilFilterInterface()">رجوع</button>
+          </div>
+          <input type="number" id="manualLiters" placeholder="أدخل عدد اللترات" class="form-control">
+          <button class="btn-primary" onclick="oilFilter_manualStep2()">التالي</button>
+        </div>
+      `;
+    }
+
+    function oilFilter_manualStep2() {
+      oilFilter_liters = parseFloat(document.getElementById('manualLiters').value) || 0;
+      oilFilter_currentStep = 'manualstep2';
+      const contentArea = document.getElementById('contentArea');
+      const viscosities = [...new Set(oilFilter_stockData.filter(oil => oil.contAvailable >= oilFilter_liters).map(oil => oil.type))];
+
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">الحاسبة اليدوية - خطوة 2: اللزوجة</h3>
+            <button class="btn-back" onclick="oilFilter_showManualCalculator()">رجوع</button>
+          </div>
+          <div class="service-options">
+            ${viscosities.map(v => `<button class="btn-option" data-viscosity="${v}">${v}</button>`).join('')}
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll('[data-viscosity]').forEach(btn => {
+        btn.onclick = () => {
+          oilFilter_selectedViscosity = btn.dataset.viscosity;
+          oilFilter_manualStep3();
+        };
+      });
+    }
+
+    function oilFilter_manualStep3() {
+      oilFilter_currentStep = 'manualstep3';
+      const contentArea = document.getElementById('contentArea');
+      const oils = oilFilter_stockData.filter(oil => oil.type === oilFilter_selectedViscosity && oil.contAvailable >= oilFilter_liters);
+
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">الحاسبة اليدوية - خطوة 3: الماركة</h3>
+            <button class="btn-back" onclick="oilFilter_manualStep2()">رجوع</button>
+          </div>
+          <div class="service-options">
+            ${oils.map(oil => `<button class="btn-option" data-oil="${JSON.stringify(oil).replace(/"/g, '&quot;')}">${oilFilter_translateBrand(oil.brand)}</button>`).join('')}
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll('[data-oil]').forEach(btn => {
+        btn.onclick = () => {
+          oilFilter_selectedOil = JSON.parse(btn.dataset.oil);
+          oilFilter_manualStep4();
+        };
+      });
+    }
+
+    function oilFilter_manualStep4() {
+      oilFilter_currentStep = 'manualstep4';
+      const contentArea = document.getElementById('contentArea');
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">الحاسبة اليدوية - خطوة 4: نوع الفلتر</h3>
+            <button class="btn-back" onclick="oilFilter_manualStep3()">رجوع</button>
+          </div>
+          <div class="service-options">
+            <button class="btn-option" data-filter="german">ألمانية (12 د.ك)</button>
+            <button class="btn-option" data-filter="other">أمريكية/يابانية/كورية (8 د.ك)</button>
+            <button class="btn-option" data-filter="custom">أخرى (أدخل السعر)</button>
+          </div>
+          <div id="customFilterPriceManual" class="hidden" style="margin-top:12px;">
+            <input type="number" id="customFilterInputManual" placeholder="أدخل سعر الفلتر" class="form-control">
+            <button class="btn-primary" onclick="oilFilter_setCustomFilterManual()">تأكيد</button>
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.onclick = () => {
+          if (btn.dataset.filter === 'german') {
+            oilFilter_filterPrice = 12;
+            oilFilter_showInvoice();
+          } else if (btn.dataset.filter === 'other') {
+            oilFilter_filterPrice = 8;
+            oilFilter_showInvoice();
+          } else if (btn.dataset.filter === 'custom') {
+            document.getElementById('customFilterPriceManual').classList.remove('hidden');
+          }
+        };
+      });
+    }
+
+    function oilFilter_setCustomFilterManual() {
+      const price = parseFloat(document.getElementById('customFilterInputManual').value) || 0;
+      oilFilter_filterPrice = price;
+      oilFilter_showInvoice();
+    }
+
+    function oilFilter_showInvoice() {
+      oilFilter_currentStep = 'invoice';
+      const contentArea = document.getElementById('contentArea');
+      const oil = oilFilter_selectedOil;
+      const car = oilFilter_selectedCar;
+      const oilTotal = oil.priceLiter * (car ? car.liters : oilFilter_liters);
+      const total = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
+
+      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car ? car.liters : oilFilter_liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك
+
+مناسب لسيارة: ${car ? oilFilter_getArabicCarName(car.carModel) : 'غير محدد'}`;
+
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h3 class="section-title">الفاتورة النهائية</h3>
+            <button class="btn-back" onclick="${oilFilter_currentStep === 'results' ? 'oilFilter_showResults()' : 'oilFilter_manualStep4()'}">رجوع</button>
+          </div>
+          <div class="invoice-details">
+            <p><strong>الزيت:</strong> ${escapeHtml(oilFilter_translateBrand(oil.brand))} - ${escapeHtml(oil.type)}</p>
+            <p><strong>الكمية:</strong> ${car ? car.liters : oilFilter_liters} لتر</p>
+            <p><strong>سعر الزيت:</strong> ${oilTotal.toFixed(2)} د.ك</p>
+            <p><strong>الفلتر:</strong> ${oilFilter_filterPrice} د.ك</p>
+            <p><strong>الخدمة الميكانيكية:</strong> ${oilFilter_servicePrice} د.ك</p>
+            <p><strong>الإجمالي:</strong> ${total.toFixed(2)} د.ك</p>
+          </div>
+          <button class="btn-primary" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ الرسالة</button>
+        </div>
+      `;
+    }
+
+    function oilFilter_showMajorService(event, price) {
+      event.stopPropagation();
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h4>التصفية العامة</h4>
+          <ul>
+            <li>تبديل بلاكات</li>
+            <li>تبديل فلتر هواء</li>
+            <li>تبديل فلتر مكيف</li>
+            <li>منظف دورة البانزين</li>
+            <li>بخاخ التصفية</li>
+            <li>تبديل زيت المكينة</li>
+            <li>تبديل فلتر الزيت</li>
+            <li>برمجة علامة الخدمة</li>
+            <li>فحص مستوى الزيوت والسوائل</li>
+            <li>فحص المساحات والتواير</li>
+            <li>فحص السفايف والديسكات</li>
+          </ul>
+          <p><strong>ملاحظة:</strong> جميع القطع أصلية معتمدة من الوكلاء الرسمية</p>
+          <p><strong>السعر:</strong> ${price} د.ك</p>
+          <button class="btn-primary" onclick="oilFilter_copyMajorServiceMessage(${price})">نسخ رسالة التصفية العامة</button>
+          <button class="btn-back" onclick="this.closest('.modal-overlay').remove()">إغلاق</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function oilFilter_copyMajorServiceMessage(price) {
+      const message = `خدمة التصفية العامة تشمل: تبديل بلاكات، تبديل فلتر هواء، تبديل فلتر مكيف، منظف دورة البانزين، بخاخ التصفية، تبديل زيت المكينة، تبديل فلتر الزيت، برمجة علامة الخدمة، فحص مستوى الزيوت والسوائل، فحص المساحات والتواير، فحص السفايف والديسكات. جميع القطع أصلية معتمدة من الوكلاء الرسمية. السعر: ${price} د.ك`;
+      oilFilter_copyMessage(message);
+    }
+
+    function oilFilter_copyMessage(message) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(message).catch(() => {
+          oilFilter_fallbackCopyTextToClipboard(message);
+        });
+      } else {
+        oilFilter_fallbackCopyTextToClipboard(message);
+      }
+      alert('تم نسخ الرسالة');
+    }
+
+    function oilFilter_fallbackCopyTextToClipboard(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {
+        console.warn('Fallback copy failed', e);
+      }
+      document.body.removeChild(ta);
     }
   </script>
 </body>
