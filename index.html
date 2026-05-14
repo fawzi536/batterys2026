@@ -553,15 +553,13 @@
       background: #2a2a2a;
       border: 1px solid #404040;
       border-radius: 4px;
-      padding: 4px 6px;
+      padding: 6px 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
       font-size: 12px;
       color: #ccc;
       font-weight: 600;
-      min-width: auto;
-      white-space: nowrap;
     }
     
     .btn-option:hover {
@@ -11193,7 +11191,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         </div>
 
         <div id="batteryResultsContainer" class="data-table-container hidden">
-          <div class="table-scroll" id="batteryResultsScroll"></div>
+
         </div>
 
         <div id="batteryFeeNotice" class="warning-box hidden" style="margin-top:10px;">
@@ -11636,10 +11634,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         sizeList.classList.remove('hidden');
         return;
       }
-      sizeList.style.display = 'block';
-      sizeList.style.gap = '';
       sizeList.innerHTML = filtered.slice(0, 80).map(size => `
-        <button type="button" class="btn-option" style="display:block; width:auto; text-align:right; margin:4px 0; padding:4px 6px;" data-value="${escapeHtml(size)}">
+        <button type="button" class="btn-option" style="width:100%; text-align:right; margin:4px 0;" data-value="${escapeHtml(size)}">
           ${highlightMatch(size, query)}
         </button>
       `).join('');
@@ -11662,10 +11658,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         container.classList.remove('hidden');
         return;
       }
-      container.style.display = 'block';
-      container.style.gap = '';
       container.innerHTML = items.slice(0, 80).map(item => `
-        <button type="button" class="btn-option" style="display:block; width:auto; text-align:right; margin:4px 0; padding:4px 6px;" data-value="${escapeHtml(item)}">
+        <button type="button" class="btn-option" style="width:100%; text-align:right; margin:4px 0;" data-value="${escapeHtml(item)}">
           ${highlightMatch(item, query)}
         </button>
       `).join('');
@@ -12074,15 +12068,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const fkQty = Number(row[5]) || 0;
       const mQty = Number(row[6]) || 0;
       const badges = [];
-      if (brand.includes('VARTA')) {
+      if (brand.includes('VARTA') || brand.includes('HANKOOK')) {
         const total = fkQty + mQty;
         if (total > 0) {
           badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">فارتا: ${total}</span>`);
-        }
-      } else if (brand.includes('HANKOOK')) {
-        const total = fkQty + mQty;
-        if (total > 0) {
-          badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">هانكوك: ${total}</span>`);
         }
       } else if (brand.includes('EMTRAC')) {
         const total = fkQty + mQty;
@@ -12103,7 +12092,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     const BATTERY_BRAND_INFO = {
       'Motorcraft': { country: 'أمريكية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنة واحدة', 'DA100': 'سنة واحدة' } }, dealer: 'فورد الغانم' },
       'Varta': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
-      'Hankook': { country: 'كوريه', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
+      'Hankook': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
       'Booster': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Oakley': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'Motorfit': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
@@ -12115,7 +12104,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'Exide': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
       'موتوركرافت': { country: 'أمريكية', warranty: { default: '3 سنوات', special: { '95AGM': 'سنتين', 'DA100': 'سنتين' } }, dealer: 'فورد الغانم' },
       'فارتا': { country: 'ألمانية', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
-      'هانكوك': { country: 'كوريه', warranty: { default: 'سنة' }, dealer: 'الفتو انترنتشلن' },
       'بوستر': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'اوكلي': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
       'موتو رفت': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'افتخار' },
@@ -12137,9 +12125,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (upperBrand.includes('MOTER CRAFT') || upperBrand.includes('MOTORCRAFT')) return 'موتوركرافت';
       if (upperBrand.includes('MOTO RAFT') || upperBrand.includes('MOTORAFT')) return 'موتو رفت';
       if (upperBrand.includes('VARTA')) return 'فارتا';
-      if (upperBrand.includes('HANKOOK')) return 'هانكوك';
+      if (upperBrand.includes('HANKOOK')) return 'فارتا';
       if (upperBrand.includes('BOSSTER') || upperBrand.includes('BOOSTER')) return 'بوستر';
       if (upperBrand.includes('EVEREADY')) return 'ايفريدي';
+      if (upperBrand.includes('HANKOOK')) return 'هانكوك';
       if (upperBrand.includes('OAKLEY')) return 'اوكلي';
       if (upperBrand.includes('AMTRA')) return 'امترا';
       if (upperBrand.includes('EMTRAC PLUS') || upperBrand.includes('EMTRAC +')) return 'امتراك بلس';
