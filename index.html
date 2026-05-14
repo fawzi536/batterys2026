@@ -12106,6 +12106,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'Amtra': { country: 'هندية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
       'Emtrac': { country: 'تركية', warranty: { default: 'سنة' }, dealer: 'البابطين' },
       'EmtracPlus': { country: 'هندية', warranty: { default: 'سنتان' }, dealer: 'البابطين' },
+      'ABM': { country: 'ماليزيا', warranty: { default: 'سنة' }, dealer: 'اف كي' },
       'Century': { country: 'صينية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
       'Yuasa': { country: 'يابانية', warranty: { default: 'سنتان' }, dealer: 'الفهد إنترناشيونال' },
       'Exide': { country: 'أمريكية', warranty: { default: 'سنة' }, dealer: 'الغانم' },
@@ -12135,6 +12136,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (upperBrand.includes('VARTA')) return 'فارتا';
       if (upperBrand.includes('HANKOOK')) return 'هانكوك';
       if (upperBrand.includes('BOSSTER') || upperBrand.includes('BOOSTER')) return 'بوستر';
+      if (upperBrand.includes('ABM')) return 'ABM';
       if (upperBrand.includes('EVEREADY')) return 'ايفريدي';
       if (upperBrand.includes('OAKLEY')) return 'اوكلي';
       if (upperBrand.includes('AMTRA')) return 'امترا';
@@ -12158,6 +12160,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (normalized === 'موتو رفت') return 'موتو رفت';
       if (normalized === 'فارتا') return 'فارتا';
       if (normalized === 'هانكوك') return 'هانكوك';
+      if (normalized === 'ABM') return 'ايه بي ام';
       if (normalized === 'بوستر') return 'بوستر';
       if (normalized === 'ايفريدي') return 'ايفريدي';
       if (normalized === 'اوكلي') return 'اوكلي';
@@ -12175,7 +12178,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       'hari+roxy': 'هاري و روكسي',
       'irfan': 'عرفان',
       'albert': 'ألبرت',
-      'lakshman': 'لاكسمن',
+      'lakshman': 'لاكشمان',
       'santheel': 'سانتيل',
       'arventh': 'أرفنت',
       'sanidu': 'سانيدو',
