@@ -1228,6 +1228,34 @@
       color: #ccc;
     }
 
+    .service-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .invoice-details {
+      display: grid;
+      gap: 10px;
+      padding: 14px 0;
+      color: #ddd;
+      border-top: 1px solid #333;
+      margin-top: 14px;
+    }
+
+    .invoice-details p {
+      margin: 0;
+      font-size: 14px;
+      color: #ddd;
+    }
+
+    .custom-filter-group {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
     .oil-copy-btn {
       width: 100%;
       margin-top: 12px;
@@ -12385,6 +12413,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     let oilFilter_selectedViscosity = '';
     let oilFilter_selectedOil = null;
     let oilFilter_currentStep = 'main';
+    let oilFilter_dataLoaded = false;
+    let oilFilter_refreshInterval = null;
 
     function renderOilFilterInterface() {
       oilFilter_currentStep = 'main';
@@ -12413,26 +12443,34 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     }
 
     function oilFilter_loadData() {
-      // Load cars data
-      fetch('https://docs.google.com/spreadsheets/d/1-hVGrK0SqiLgXV_zaqhh2bqYCjjr4Q28jzWU8gG6jTU/gviz/tq?tqx=out:csv&sheet=Cars')
+      if (oilFilter_dataLoaded) {
+        return;
+      }
+      oilFilter_dataLoaded = true;
+
+      const carsUrl = 'https://docs.google.com/spreadsheets/d/1-hVGrK0SqiLgXV_zaqhh2bqYCjjr4Q28jzWU8gG6jTU/gviz/tq?tqx=out:csv&sheet=Cars&timestamp=' + Date.now();
+      const stockUrl = 'https://docs.google.com/spreadsheets/d/1ax4pCBDTm6Vkq-MZjmmOY1dgwKCUQS5x1GeffkUYOzI/gviz/tq?tqx=out:csv&sheet=Stock&timestamp=' + Date.now();
+
+      fetch(carsUrl)
         .then(response => response.text())
         .then(text => {
           oilFilter_carsData = oilFilter_processCarsData(text);
         })
         .catch(err => console.error('Error loading cars data:', err));
 
-      // Load stock data
-      fetch('https://docs.google.com/spreadsheets/d/1ax4pCBDTm6Vkq-MZjmmOY1dgwKCUQS5x1GeffkUYOzI/gviz/tq?tqx=out:csv&sheet=Stock')
+      fetch(stockUrl)
         .then(response => response.text())
         .then(text => {
           oilFilter_stockData = oilFilter_processStockData(text);
         })
         .catch(err => console.error('Error loading stock data:', err));
 
-      // Refresh every 30 seconds
-      setInterval(() => {
-        oilFilter_loadData();
-      }, 30000);
+      if (!oilFilter_refreshInterval) {
+        oilFilter_refreshInterval = setInterval(() => {
+          oilFilter_dataLoaded = false;
+          oilFilter_loadData();
+        }, 30000);
+      }
     }
 
     function oilFilter_processCarsData(text) {
@@ -12592,39 +12630,46 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       oilFilter_currentStep = 'results';
       const contentArea = document.getElementById('contentArea');
       const car = oilFilter_selectedCar;
-      const availableOils = oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters);
+      const availableOils = car ? oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters) : [];
 
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
+      const resultsHtml = availableOils.length > 0 ? availableOils.map(oil => {
+        const oilTotal = oil.effectivePriceLiter * car.liters;
+        const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
+        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك
+
+مناسب لسيارة: ${oilFilter_getArabicCarName(car.carModel)}`;
+        return `
+          <div class="oil-card">
+            <div class="oil-card-header">
+              <h4>${escapeHtml(oilFilter_translateBrand(oil.brand))}</h4>
+              <span class="oil-price">${grandTotal.toFixed(2)} د.ك</span>
+            </div>
+            <div class="oil-card-details">
+              <p>اللزوجة: ${escapeHtml(oil.type)}</p>
+              <p>الكمية: ${car.liters} لتر</p>
+              <p>المتوفر: ${oil.contAvailable} عبوة</p>
+              <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
+            </div>
+            <button class="btn-primary oil-copy-btn" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
+          </div>
+        `;
+      }).join('') : `
+          <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
+            <p>لا توجد زيوت متاحة حالياً للكمية المطلوبة.</p>
+            <p>تأكد من تحميل البيانات أو اختر سيارة/كمية أخرى.</p>
+          </div>
+        `;
+
       contentArea.innerHTML = `
         <div class="form-section full-width">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-            <h3 class="section-title">الزيوت المتاحة لـ ${escapeHtml(car.carModel)}</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px; flex-wrap:wrap;">
+            <h3 class="section-title">الزيوت المتاحة لـ ${escapeHtml(car ? car.carModel : '')}</h3>
             <button class="btn-back" onclick="oilFilter_showFilterSelection()">رجوع</button>
           </div>
           <div class="oil-results-grid">
-            ${availableOils.map(oil => {
-              const oilTotal = oil.effectivePriceLiter * car.liters;
-              const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
-              const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك
-
-مناسب لسيارة: ${oilFilter_getArabicCarName(car.carModel)}`;
-              return `
-                <div class="oil-card">
-                  <div class="oil-card-header">
-                    <h4>${escapeHtml(oilFilter_translateBrand(oil.brand))}</h4>
-                    <span class="oil-price">${grandTotal.toFixed(2)} د.ك</span>
-                  </div>
-                  <div class="oil-card-details">
-                    <p>اللزوجة: ${escapeHtml(oil.type)}</p>
-                    <p>الكمية: ${car.liters} لتر</p>
-                    <p>المتوفر: ${oil.contAvailable} عبوة</p>
-                    <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
-                  </div>
-                  <button class="btn-primary oil-copy-btn" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
-                </div>
-              `;
-            }).join('')}
+            ${resultsHtml}
           </div>
         </div>
       `;
