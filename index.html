@@ -12456,14 +12456,20 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         .then(text => {
           oilFilter_carsData = oilFilter_processCarsData(text);
         })
-        .catch(err => console.error('Error loading cars data:', err));
+        .catch(err => {
+          oilFilter_dataLoaded = false;
+          console.error('Error loading cars data:', err);
+        });
 
       fetch(stockUrl)
         .then(response => response.text())
         .then(text => {
           oilFilter_stockData = oilFilter_processStockData(text);
         })
-        .catch(err => console.error('Error loading stock data:', err));
+        .catch(err => {
+          oilFilter_dataLoaded = false;
+          console.error('Error loading stock data:', err);
+        });
 
       if (!oilFilter_refreshInterval) {
         oilFilter_refreshInterval = setInterval(() => {
@@ -12508,23 +12514,53 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return fallback;
     }
 
+    function toNumber(value) {
+      if (!value && value !== 0) return 0;
+      const normalized = String(value)
+        .trim()
+        .replace(/\u0660/g, '0')
+        .replace(/\u0661/g, '1')
+        .replace(/\u0662/g, '2')
+        .replace(/\u0663/g, '3')
+        .replace(/\u0664/g, '4')
+        .replace(/\u0665/g, '5')
+        .replace(/\u0666/g, '6')
+        .replace(/\u0667/g, '7')
+        .replace(/\u0668/g, '8')
+        .replace(/\u0669/g, '9')
+        .replace(/,/g, '.')
+        .replace(/[^	0-9.\-]/g, '');
+      return parseFloat(normalized) || 0;
+    }
+
     function oilFilter_processCarsData(text) {
       const lines = text.trim().split(/\r?\n/);
       if (lines.length <= 1) return [];
       const headers = parseCsvLine(lines[0]);
-      const modelIndex = findHeaderIndex(headers, ['car model', 'model', 'name', 'carname', 'car name'], 0);
-      const typeIndex = findHeaderIndex(headers, ['oil type', 'type', 'viscosity'], 1);
-      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'c', 'quantity', 'qty'], 2);
-      const serviceIndex = findHeaderIndex(headers, ['major service', 'majorservice', 'service', 'major'], 3);
+      const modelIndex = findHeaderIndex(headers, ['car model', 'model', 'name', 'carname', 'car name', 'اسم السيارة'], 0);
+      const typeIndex = findHeaderIndex(headers, ['oil type', 'type', 'viscosity', 'الزيت'], 1);
+      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'c', 'quantity', 'qty', 'الكمية'], 2);
+      const serviceIndex = findHeaderIndex(headers, ['major service', 'majorservice', 'service', 'major', 'ميجر سيرفس'], 3);
 
       return lines.slice(1).map(line => {
         if (!line.trim()) return null;
         const cols = parseCsvLine(line);
+        const liters = toNumber(cols[litersIndex]);
+        let finalLiters = liters;
+        if (!finalLiters) {
+          for (let i = 2; i < cols.length; i += 1) {
+            const candidate = toNumber(cols[i]);
+            if (candidate > 0) {
+              finalLiters = candidate;
+              break;
+            }
+          }
+        }
         return {
           carModel: cols[modelIndex] ? cols[modelIndex].replace(/"/g, '').trim() : '',
           oilType: cols[typeIndex] ? cols[typeIndex].replace(/"/g, '').trim() : '',
-          liters: parseFloat(cols[litersIndex]) || 0,
-          majorService: parseFloat(cols[serviceIndex]) || 0
+          liters: finalLiters,
+          majorService: toNumber(cols[serviceIndex])
         };
       }).filter(car => car && car.carModel);
     }
@@ -12533,20 +12569,20 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const lines = text.trim().split(/\r?\n/);
       if (lines.length <= 1) return [];
       const headers = parseCsvLine(lines[0]);
-      const brandIndex = findHeaderIndex(headers, ['brand', 'company', 'company name', 'marka', 'ماركة'], 0);
-      const typeIndex = findHeaderIndex(headers, ['type', 'oil type', 'viscosity', 'grade'], 1);
-      const priceIndex = findHeaderIndex(headers, ['price', 'unit price', 'cost'], 2);
-      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'quantity', 'qty', 'amount'], 3);
-      const priceLiterIndex = findHeaderIndex(headers, ['price per liter', 'price liter', 'price_liter', 'priceLiter'], 4);
-      const countryIndex = findHeaderIndex(headers, ['country', 'origin'], 5);
+      const brandIndex = findHeaderIndex(headers, ['brand', 'company', 'company name', 'marka', 'ماركة', 'العلامة'], 0);
+      const typeIndex = findHeaderIndex(headers, ['type', 'oil type', 'viscosity', 'grade', 'الزيت'], 1);
+      const priceIndex = findHeaderIndex(headers, ['price', 'unit price', 'cost', 'سعر', 'price per liter'], 2);
+      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'quantity', 'qty', 'amount', 'الكمية'], 3);
+      const priceLiterIndex = findHeaderIndex(headers, ['price per liter', 'price liter', 'price_liter', 'priceLiter', 'سعر للتر'], 4);
+      const countryIndex = findHeaderIndex(headers, ['country', 'origin', 'بلد'], 5);
 
       return lines.slice(1).map(line => {
         if (!line.trim()) return null;
         const cols = parseCsvLine(line);
-        const price = parseFloat(cols[priceIndex]) || 0;
-        const contAvailable = parseFloat(cols[litersIndex]) || 0;
-        const priceLiter = parseFloat(cols[priceLiterIndex]) || 0;
-        const effectivePriceLiter = priceLiter > 0 ? priceLiter : (contAvailable > 0 ? price / contAvailable : 0);
+        const price = toNumber(cols[priceIndex]);
+        const contAvailable = toNumber(cols[litersIndex]);
+        const priceLiter = toNumber(cols[priceLiterIndex]);
+        const effectivePriceLiter = priceLiter > 0 ? priceLiter : price > 0 ? price : (contAvailable > 0 ? price / contAvailable : 0);
         return {
           brand: cols[brandIndex] ? cols[brandIndex].replace(/"/g, '').trim() : '',
           type: cols[typeIndex] ? cols[typeIndex].replace(/"/g, '').trim() : '',
@@ -12555,7 +12591,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           priceLiter: priceLiter,
           effectivePriceLiter: effectivePriceLiter,
           country: cols[countryIndex] ? cols[countryIndex].replace(/"/g, '').trim() : '',
-          contAvailable: parseInt(cols[litersIndex]) || 0
+          contAvailable: contAvailable
         };
       }).filter(oil => oil && oil.brand);
     }
