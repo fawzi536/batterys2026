@@ -11761,13 +11761,14 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       { label: 'ali and Mohammed', fkIndex: 35, mIndex: 36 },
       { label: 'Sayid and Ramos', fkIndex: 37, mIndex: 38 },
       { label: 'Durga Prasad', fkIndex: 39, mIndex: 40 },
-      { label: 'sinjiwah', fkIndex: 41, mIndex: 42 }
+      { label: 'sinjiwah', fkIndex: 41, mIndex: 42 },
+      { label: 'driver19', fkIndex: 43, mIndex: 44 }
     ];
 
     function getDriverColumnGroups() {
       if (!batterySheetHeaders || batterySheetHeaders.length <= 7) return [];
       return BATTERY_DRIVER_COLUMN_CONFIGS.map(config => ({
-        name: config.label,
+        name: (batterySheetHeaders[config.fkIndex] || config.label || '').trim(),
         fkIndex: config.fkIndex,
         mIndex: config.mIndex
       }));
@@ -11914,7 +11915,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       scroll.querySelectorAll('.copy-btn-small').forEach(btn => {
         btn.onclick = async () => {
           const index = Number(btn.dataset.copyIndex);
-          const selected = items[index];
+          const selected = filteredItems[index];
           if (!selected) return;
           await copyBatteryTextToClipboard(buildBatteryMessage(selected.row));
           showToast('تم نسخ الرسالة');
@@ -12069,10 +12070,15 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const fkQty = Number(row[5]) || 0;
       const mQty = Number(row[6]) || 0;
       const badges = [];
-      if (brand.includes('VARTA') || brand.includes('HANKOOK')) {
+      if (brand.includes('VARTA')) {
         const total = fkQty + mQty;
         if (total > 0) {
           badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">فارتا: ${total}</span>`);
+        }
+      } else if (brand.includes('HANKOOK')) {
+        const total = fkQty + mQty;
+        if (total > 0) {
+          badges.push(`<span class="status-badge" style="background:#F2BC1B;color:#000; margin:3px;">هانكوك: ${total}</span>`);
         }
       } else if (brand.includes('EMTRAC')) {
         const total = fkQty + mQty;
@@ -12194,6 +12200,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const badges = [];
       const driverGroups = getDriverColumnGroups();
       let hasStock = false;
+      const brand = (row[1] || '').toUpperCase();
+      const isVartaOrHankook = brand.includes('VARTA') || brand.includes('HANKOOK');
       driverGroups.forEach(group => {
         const driverNameRaw = group.name || '';
         const name = getDriverName(driverNameRaw);
@@ -12205,7 +12213,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           const parts = [];
           if (fkQty) parts.push(`اف كي:${fkQty}`);
           if (mQty) parts.push(`افتخار:${mQty}`);
-          badges.push(`<span class="battery-driver-badge">${escapeHtml(name)} ${parts.join(' | ')}</span>`);
+          const displayName = isVartaOrHankook ? 'فارتاا' : name;
+          badges.push(`<span class="battery-driver-badge">${escapeHtml(displayName)} ${parts.join(' | ')}</span>`);
         }
       });
       return hasStock ? badges.join('') : '<span class="battery-count-badge" style="background:rgba(212,53,53,0.2); border-color:rgba(239,68,68,0.3); color:#ef4444;">غير متوفرة</span>';
