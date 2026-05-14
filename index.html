@@ -12473,33 +12473,15 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       }
     }
 
-    function oilFilter_parseNumber(value) {
-      if (value === undefined || value === null) return 0;
-      const normalized = value.toString().trim().replace(/\u00A0/g, '').replace(/,/g, '.');
-      const number = parseFloat(normalized);
-      return Number.isFinite(number) ? number : 0;
-    }
-
-    function oilFilter_parseCsvLine(line) {
-      const result = [];
-      const regex = /(?:"([^"]*(?:""[^"]*)*)"|([^",]*))(?:,|$)/g;
-      let match;
-      while ((match = regex.exec(line)) !== null) {
-        const value = match[1] !== undefined ? match[1].replace(/""/g, '"') : match[2];
-        result.push(value !== undefined ? value : '');
-      }
-      return result;
-    }
-
     function oilFilter_processCarsData(text) {
       const lines = text.split('\n').slice(1); // Skip header
       return lines.map(line => {
-        const cols = oilFilter_parseCsvLine(line);
+        const cols = line.split(',');
         return {
           carModel: cols[0] ? cols[0].replace(/"/g, '') : '',
           oilType: cols[1] ? cols[1].replace(/"/g, '') : '',
-          liters: oilFilter_parseNumber(cols[2]),
-          majorService: oilFilter_parseNumber(cols[3])
+          liters: parseFloat(cols[2]) || 0,
+          majorService: parseFloat(cols[3]) || 0
         };
       }).filter(car => car.carModel);
     }
@@ -12507,20 +12489,20 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function oilFilter_processStockData(text) {
       const lines = text.split('\n').slice(1); // Skip header
       return lines.map(line => {
-        const cols = oilFilter_parseCsvLine(line);
-        const price = oilFilter_parseNumber(cols[2]);
-        const available = oilFilter_parseNumber(cols[3]);
-        const priceLiter = oilFilter_parseNumber(cols[4]);
-        const effectivePriceLiter = priceLiter > 0 ? priceLiter : price;
+        const cols = line.split(',');
+        const price = parseFloat(cols[2]) || 0;
+        const liters = parseFloat(cols[3]) || 0;
+        const priceLiter = parseFloat(cols[4]) || 0;
+        const effectivePriceLiter = priceLiter > 0 ? priceLiter : (liters > 0 ? price / liters : 0);
         return {
           brand: cols[0] ? cols[0].replace(/"/g, '') : '',
           type: cols[1] ? cols[1].replace(/"/g, '') : '',
           price: price,
-          available: available,
+          liters: liters,
           priceLiter: priceLiter,
           effectivePriceLiter: effectivePriceLiter,
           country: cols[5] ? cols[5].replace(/"/g, '') : '',
-          contAvailable: available
+          contAvailable: parseInt(cols[6]) || 0
         };
       }).filter(oil => oil.brand);
     }
@@ -12648,14 +12630,16 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       oilFilter_currentStep = 'results';
       const contentArea = document.getElementById('contentArea');
       const car = oilFilter_selectedCar;
-      const availableOils = car ? oilFilter_stockData.filter(oil => oil.available >= car.liters) : [];
+      const availableOils = car ? oilFilter_stockData.filter(oil => oil.contAvailable >= car.liters) : [];
 
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
       const resultsHtml = availableOils.length > 0 ? availableOils.map(oil => {
         const oilTotal = oil.effectivePriceLiter * car.liters;
         const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
-        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك\n\nمناسب لسيارة: ${oilFilter_getArabicCarName(car.carModel)}`;
+        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك
+
+مناسب لسيارة: ${oilFilter_getArabicCarName(car.carModel)}`;
         return `
           <div class="oil-card">
             <div class="oil-card-header">
@@ -12665,8 +12649,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <div class="oil-card-details">
               <p>اللزوجة: ${escapeHtml(oil.type)}</p>
               <p>الكمية: ${car.liters} لتر</p>
-              <p>المتوفر: ${oil.available} عبوة</p>
-              <p>تفاصيل: زيت ${oilTotal.toFixed(2)} د.ك + فلتر ${oilFilter_filterPrice} د.ك + خدمة ${oilFilter_servicePrice} د.ك</p>
+              <p>المتوفر: ${oil.contAvailable} عبوة</p>
+              <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
             </div>
             <button class="btn-primary oil-copy-btn" onclick="oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
           </div>
@@ -12814,7 +12798,9 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const oilTotal = effectivePriceLiter * liters;
       const total = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
 
-      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك\n\nمناسب لسيارة: ${car ? oilFilter_getArabicCarName(car.carModel) : 'غير محدد'}`;
+      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك
+
+مناسب لسيارة: ${car ? oilFilter_getArabicCarName(car.carModel) : 'غير محدد'}`;
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
@@ -12825,7 +12811,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           <div class="invoice-details">
             <p><strong>الزيت:</strong> ${escapeHtml(oilFilter_translateBrand(oil.brand))} - ${escapeHtml(oil.type)}</p>
             <p><strong>الكمية:</strong> ${liters} لتر</p>
-            <p><strong>المتوفر:</strong> ${oil.available} عبوة</p>
             <p><strong>سعر الزيت:</strong> ${oilTotal.toFixed(2)} د.ك</p>
             <p><strong>الفلتر:</strong> ${oilFilter_filterPrice} د.ك</p>
             <p><strong>الخدمة الميكانيكية:</strong> ${oilFilter_servicePrice} د.ك</p>
