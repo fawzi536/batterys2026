@@ -12729,17 +12729,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         return;
       }
 
-      // Parse car's oil type(s) - could be single (5W40) or multiple (0W30/5W30/5W40)
-      const carOilTypes = car.oilType
-        .split('/')
-        .map(type => type.trim().toUpperCase())
-        .filter(type => type.length > 0);
-
-      // Filter oils that match the car's required oil type(s) AND have sufficient quantity
+      // Only keep oils that match the car's viscosities and have sufficient quantity
+      const wantedVis = (parseViscosities(car.oilType || '') || []).map(v => v.toString().toUpperCase());
       const availableOils = oilFilter_stockData.filter(oil => {
-        const oilTypeUpper = oil.type.trim().toUpperCase();
-        const typeMatches = carOilTypes.some(carType => oilTypeUpper === carType);
-        return typeMatches && oil.contAvailable >= car.liters && oil.contAvailable > 0;
+        const vis = (oil.type || '').toString().toUpperCase();
+        return wantedVis.includes(vis) && oil.contAvailable >= car.liters && oil.contAvailable > 0;
       });
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
@@ -13036,6 +13030,85 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       }
       document.body.removeChild(ta);
     }
+  </script>
+  <script>
+    // Oil viscosity parsing and filtering utilities
+    function parseViscosities(oilTypeStr) {
+      if (!oilTypeStr) return [];
+      return oilTypeStr
+        .toString()
+        .split('/')
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+
+    function filterOilsByViscosities(oilTypeStr, oils) {
+      const wanted = new Set(parseViscosities(oilTypeStr).map(v => v.toUpperCase()));
+      if (!Array.isArray(oils)) return [];
+      return oils.filter(o => {
+        const vis = (o.viscosity || o.oilType || '').toString().toUpperCase();
+        const qty = Number(o.quantity ?? o.qty ?? o.amount ?? 0);
+        return wanted.has(vis) && Number.isFinite(qty) && qty > 0;
+      });
+    }
+
+    // Render results into a small container appended to content area
+    function ensureOilResultsContainer() {
+      let container = document.getElementById('oil-results');
+      if (container) return container;
+      const content = document.getElementById('contentArea') || document.body;
+      container = document.createElement('div');
+      container.id = 'oil-results';
+      container.className = 'form-section full-width';
+      container.style.marginTop = '12px';
+      container.innerHTML = `<h3 class="section-title">زيوت متوافقة</h3><div id="oil-results-list" class="oil-results-grid"></div>`;
+      content.prepend(container);
+      return container;
+    }
+
+    function renderOilList(oils) {
+      const container = ensureOilResultsContainer();
+      const listHost = container.querySelector('#oil-results-list');
+      if (!listHost) return;
+      listHost.innerHTML = '';
+      if (!oils || oils.length === 0) {
+        listHost.innerHTML = '<div class="battery-results-message">لا توجد زيوت مطابقة متوفرة.</div>';
+        return;
+      }
+      oils.forEach(o => {
+        const card = document.createElement('div');
+        card.className = 'oil-card';
+        card.innerHTML = `
+          <div class="oil-card-header"><h4>${escapeHtml(o.name || o.label || 'بدون اسم')}</h4><div class="oil-price">${escapeHtml(String(o.price ?? o.priceKWD ?? ''))}</div></div>
+          <div class="oil-card-details">
+            <p>اللزوجة: <strong>${escapeHtml(o.viscosity || o.oilType || '')}</strong></p>
+            <p>الكمية المتوفرة: <strong>${escapeHtml(String(o.quantity ?? o.qty ?? '0'))}</strong></p>
+          </div>`;
+        listHost.appendChild(card);
+      });
+    }
+
+    // Public API: set inventory and call on car selection
+    window.setOilInventory = function(inv) {
+      window._oilInventory = Array.isArray(inv) ? inv : [];
+    };
+
+    window.onCarSelected = function(oilTypeStr, inventory) {
+      const inv = Array.isArray(inventory) ? inventory : (window._oilInventory || []);
+      const matches = filterOilsByViscosities(oilTypeStr, inv);
+      renderOilList(matches);
+      return matches;
+    };
+
+    // Small helper to call when row clicked: expects a table row where column B contains oil type
+    window.onCarRowClicked = function(rowEl) {
+      if (!rowEl) return;
+      const cells = rowEl.querySelectorAll('td,th');
+      // column B is index 1
+      const oilTypeCell = cells[1];
+      const oilTypeStr = oilTypeCell ? oilTypeCell.textContent.trim() : '';
+      return window.onCarSelected(oilTypeStr);
+    };
   </script>
 </body>
 </html>
