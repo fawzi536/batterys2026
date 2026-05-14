@@ -11636,11 +11636,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         sizeList.classList.remove('hidden');
         return;
       }
-      sizeList.style.display = 'flex';
-      sizeList.style.flexWrap = 'wrap';
-      sizeList.style.gap = '6px';
+      sizeList.style.display = 'block';
+      sizeList.style.gap = '';
       sizeList.innerHTML = filtered.slice(0, 80).map(size => `
-        <button type="button" class="btn-option" style="display:inline-block; width:auto; text-align:right; margin:3px; padding:4px 6px;" data-value="${escapeHtml(size)}">
+        <button type="button" class="btn-option" style="display:block; width:auto; text-align:right; margin:4px 0; padding:4px 6px;" data-value="${escapeHtml(size)}">
           ${highlightMatch(size, query)}
         </button>
       `).join('');
@@ -11663,11 +11662,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         container.classList.remove('hidden');
         return;
       }
-      container.style.display = 'flex';
-      container.style.flexWrap = 'wrap';
-      container.style.gap = '6px';
+      container.style.display = 'block';
+      container.style.gap = '';
       container.innerHTML = items.slice(0, 80).map(item => `
-        <button type="button" class="btn-option" style="display:inline-block; width:auto; text-align:right; margin:3px; padding:4px 6px;" data-value="${escapeHtml(item)}">
+        <button type="button" class="btn-option" style="display:block; width:auto; text-align:right; margin:4px 0; padding:4px 6px;" data-value="${escapeHtml(item)}">
           ${highlightMatch(item, query)}
         </button>
       `).join('');
