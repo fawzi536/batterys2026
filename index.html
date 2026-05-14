@@ -12556,9 +12556,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             }
           }
         }
+        // Clean oilType: remove surrounding quotes, preserve slashes for multi-viscosity (e.g. "0W30/5W30/5W40")
+        const rawOilType = cols[typeIndex] ? cols[typeIndex].replace(/^["']+|["']+$/g, '').trim() : '';
         return {
-          carModel: cols[modelIndex] ? cols[modelIndex].replace(/"/g, '').trim() : '',
-          oilType: cols[typeIndex] ? cols[typeIndex].replace(/"/g, '').trim() : '',
+          carModel: cols[modelIndex] ? cols[modelIndex].replace(/^["']+|["']+$/g, '').trim() : '',
+          oilType: rawOilType,
           liters: finalLiters,
           majorService: toNumber(cols[serviceIndex])
         };
@@ -12584,13 +12586,13 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         const priceLiter = toNumber(cols[priceLiterIndex]);
         const effectivePriceLiter = priceLiter > 0 ? priceLiter : price > 0 ? price : (contAvailable > 0 ? price / contAvailable : 0);
         return {
-          brand: cols[brandIndex] ? cols[brandIndex].replace(/"/g, '').trim() : '',
-          type: cols[typeIndex] ? cols[typeIndex].replace(/"/g, '').trim() : '',
+          brand: cols[brandIndex] ? cols[brandIndex].replace(/^["']+|["']+$/g, '').trim() : '',
+          type: cols[typeIndex] ? cols[typeIndex].replace(/^["']+|["']+$/g, '').trim() : '',
           price: price,
           liters: contAvailable,
           priceLiter: priceLiter,
           effectivePriceLiter: effectivePriceLiter,
-          country: cols[countryIndex] ? cols[countryIndex].replace(/"/g, '').trim() : '',
+          country: cols[countryIndex] ? cols[countryIndex].replace(/^["']+|["']+$/g, '').trim() : '',
           contAvailable: contAvailable
         };
       }).filter(oil => oil && oil.brand);
@@ -12729,11 +12731,15 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         return;
       }
 
-      // Only keep oils that match the car's viscosities and have sufficient quantity
-      const wantedVis = (parseViscosities(car.oilType || '') || []).map(v => v.toString().toUpperCase());
+      // Parse all viscosities from car's oil type cell (handles "5W40", "0W30/5W30", "0W30/5W30/5W40")
+      const wantedVis = parseViscosities(car.oilType || '');
+
+      // Filter oils: must match any of the wanted viscosities AND have stock > 0
       const availableOils = oilFilter_stockData.filter(oil => {
-        const vis = (oil.type || '').toString().toUpperCase();
-        return wantedVis.includes(vis) && oil.contAvailable >= car.liters && oil.contAvailable > 0;
+        // Normalize the oil's viscosity from stock sheet (remove quotes, trim, uppercase)
+        const vis = (oil.type || '').toString().replace(/["']/g, '').trim().toUpperCase();
+        const inStock = Number(oil.contAvailable) > 0;
+        return wantedVis.includes(vis) && inStock;
       });
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
@@ -13035,19 +13041,25 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     // Oil viscosity parsing and filtering utilities
     function parseViscosities(oilTypeStr) {
       if (!oilTypeStr) return [];
-      return oilTypeStr
+      // Remove surrounding quotes (single or double), trim whitespace
+      const cleaned = oilTypeStr
         .toString()
+        .replace(/^["']+|["']+$/g, '')
+        .trim();
+      if (!cleaned) return [];
+      // Split by / and clean each part
+      return cleaned
         .split('/')
-        .map(s => s.trim())
+        .map(s => s.replace(/["']/g, '').trim().toUpperCase())
         .filter(Boolean);
     }
 
     function filterOilsByViscosities(oilTypeStr, oils) {
-      const wanted = new Set(parseViscosities(oilTypeStr).map(v => v.toUpperCase()));
+      const wanted = new Set(parseViscosities(oilTypeStr));
       if (!Array.isArray(oils)) return [];
       return oils.filter(o => {
-        const vis = (o.viscosity || o.oilType || '').toString().toUpperCase();
-        const qty = Number(o.quantity ?? o.qty ?? o.amount ?? 0);
+        const vis = (o.viscosity || o.oilType || o.type || '').toString().replace(/["']/g, '').trim().toUpperCase();
+        const qty = Number(o.quantity ?? o.qty ?? o.amount ?? o.contAvailable ?? 0);
         return wanted.has(vis) && Number.isFinite(qty) && qty > 0;
       });
     }
