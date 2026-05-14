@@ -12503,15 +12503,25 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       return cols;
     }
 
+    function normalizeHeader(name) {
+      if (!name && name !== 0) return '';
+      return String(name)
+        .replace(/^\uFEFF/, '')
+        .replace(/["]+/g, '')
+        .trim()
+        .toLowerCase();
+    }
+
     function findHeaderIndex(headers, names, fallback) {
-      const lowerHeaders = headers.map(h => h.trim().toLowerCase());
+      const lowerHeaders = headers.map(h => normalizeHeader(h));
       for (const name of names) {
-        const index = lowerHeaders.indexOf(name.toLowerCase());
+        const lookup = normalizeHeader(name);
+        const index = lowerHeaders.indexOf(lookup);
         if (index !== -1) {
           return index;
         }
       }
-      return fallback;
+      return Number.isInteger(fallback) ? fallback : 0;
     }
 
     function toNumber(value) {
@@ -12536,10 +12546,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function oilFilter_processCarsData(text) {
       const lines = text.trim().split(/\r?\n/);
       if (lines.length <= 1) return [];
-      const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
-      const modelIndex = findHeaderIndex(headers, ['car', 'model', 'اسم السيارة', 'name', 'vehicle'], 0);
-      const typeIndex = findHeaderIndex(headers, ['viscosity', 'oil type', 'type', 'grade', 'درجة اللزوجة', 'لزوجة'], 1);
-      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'quantity', 'qty', 'amount', 'عدد اللترات', 'لترات', 'كمية'], 2);
+      const headers = parseCsvLine(lines[0]);
+      const modelIndex = findHeaderIndex(headers, ['car', 'model', 'اسم السيارة', 'name', 'vehicle', 'A', 'a'], 0);
+      const typeIndex = findHeaderIndex(headers, ['viscosity', 'oil type', 'type', 'grade', 'درجة اللزوجة', 'لزوجة', 'B', 'b'], 1);
+      const litersIndex = findHeaderIndex(headers, ['liters', 'liter', 'quantity', 'qty', 'amount', 'عدد اللترات', 'لترات', 'كمية', 'C', 'c'], 2);
       const serviceIndex = findHeaderIndex(headers, ['service', 'major service', 'خدمة', 'خدمة كبرى'], 3);
 
       return lines.slice(1).map(line => {
@@ -12569,12 +12579,12 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function oilFilter_processStockData(text) {
       const lines = text.trim().split(/\r?\n/);
       if (lines.length <= 1) return [];
-      const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
-      const brandIndex = findHeaderIndex(headers, ['brand', 'company', 'company name', 'marka', 'ماركة', 'العلامة'], 0);
-      const typeIndex = findHeaderIndex(headers, ['type', 'oil type', 'viscosity', 'grade', 'الزيت', 'degree'], 1);
-      const priceIndex = findHeaderIndex(headers, ['price', 'unit price', 'cost', 'سعر', 'price per liter', 'unit'], 2);
-      const litersIndex = findHeaderIndex(headers, ['contavailable', 'available', 'quantity', 'qty', 'amount', 'liters', 'liter', 'الكمية', 'متوفر'], 5);
-      const priceLiterIndex = findHeaderIndex(headers, ['price per liter', 'price liter', 'price_liter', 'priceLiter', 'سعر للتر'], 2);
+      const headers = parseCsvLine(lines[0]);
+      const brandIndex = findHeaderIndex(headers, ['brand', 'company', 'company name', 'marka', 'ماركة', 'العلامة', 'A', 'a'], 0);
+      const typeIndex = findHeaderIndex(headers, ['type', 'oil type', 'viscosity', 'grade', 'الزيت', 'درجة', 'نوع', 'نوع الزيت', 'B', 'b'], 1);
+      const priceIndex = findHeaderIndex(headers, ['price', 'unit price', 'cost', 'سعر', 'price per liter', 'unit', 'C', 'c'], 2);
+      const litersIndex = findHeaderIndex(headers, ['contavailable', 'available', 'quantity', 'qty', 'amount', 'liters', 'liter', 'الكمية', 'متوفر', 'F', 'f'], 5);
+      const priceLiterIndex = findHeaderIndex(headers, ['price per liter', 'price liter', 'price_liter', 'priceLiter', 'سعر للتر', 'D', 'd'], 2);
       const countryIndex = findHeaderIndex(headers, ['country', 'origin', 'بلد'], 5);
 
       return lines.slice(1).map(line => {
