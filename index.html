@@ -574,6 +574,34 @@
       font-weight: 700;
     }
     
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-small {
+      padding: 8px 12px;
+      font-size: 13px;
+      min-width: 110px;
+    }
+
+    .btn-secondary {
+      background: #F2BC1B;
+      color: #000;
+      border: 1px solid #d9a616;
+    }
+
+    .btn-secondary:hover {
+      background: #d9a616;
+    }
+
     .btn-primary {
       background: #F2BC1B;
       color: #000;
@@ -934,17 +962,18 @@
 
 .battery-result-row-compact {
   display: grid;
-      grid-template-columns: minmax(180px, 2fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(180px, 1.4fr) minmax(180px, 1.4fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(180px, 1.8fr) minmax(100px, 100px);
-        gap: 8px;
-        padding: 10px;
-        border-radius: 14px;
-        background: #0f0f0f;
-        border: 1px solid #1a1a1a;
-        align-items: start;
-        margin-bottom: 6px;
+  grid-template-columns: minmax(160px, 2fr) minmax(90px, 0.8fr) minmax(100px, 0.9fr) minmax(120px, 1fr) minmax(100px, 0.8fr) minmax(110px, 0.9fr) minmax(140px, 1.2fr) minmax(90px, 90px);
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  align-items: start;
+  margin-bottom: 6px;
+}
 
-    .battery-result-row-col-main,
-    .battery-result-row-col-mid,
+.battery-result-row-col-main,
+.battery-result-row-col-mid,
     .battery-result-row-col-small,
     .battery-result-row-col-stock,
     .battery-result-row-col-actions {
@@ -1368,12 +1397,12 @@
     }
     
     .warning-box {
-      background: #4a3a1a;
-      border: 1px solid #f59e0b;
+      background: rgba(242, 188, 27, 0.12);
+      border: 1px solid #F2BC1B;
       border-radius: 4px;
       padding: 10px 12px;
       font-size: 13px;
-      color: #fbbf24;
+      color: #F2BC1B;
       margin-top: 7px;
     }
     
