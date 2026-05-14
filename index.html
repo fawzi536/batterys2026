@@ -12870,6 +12870,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
 
     function oilFilter_showManualCalculator() {
       oilFilter_currentStep = 'manual';
+      // Set default filter price for manual calculator
+      if (!oilFilter_filterPrice) {
+        oilFilter_filterPrice = 12; // Default to German filter
+      }
       const contentArea = document.getElementById('contentArea');
       contentArea.innerHTML = `
         <div class="form-section full-width">
@@ -12943,57 +12947,96 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     function oilFilter_manualStep3() {
       oilFilter_currentStep = 'manualstep3';
       const contentArea = document.getElementById('contentArea');
-      
+
       // Parse selected viscosity for matching against oils
       const selectedViscs = oilFilter_parseViscosityList(oilFilter_selectedViscosity);
-      
-      // Filter oils that contain the selected viscosity
-      const oils = oilFilter_stockData.filter(oil => {
-        if (oil.contAvailable < oilFilter_liters) return false;
-        
-        // Parse oil viscosities and check if any match the selected viscosity
-        const oilViscs = oilFilter_parseViscosityList(oil.type);
-        return oilViscs.some(oilVisc => selectedViscs.includes(oilVisc));
-      });
 
-      if (!oils.length) {
-        contentArea.innerHTML = `
-          <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
-            <p>❌ لا توجد ماركات متاحة للزيت ${escapeHtml(oilFilter_selectedViscosity)} والكمية ${oilFilter_liters} لتر.</p>
-            <button class="btn-primary" onclick="oilFilter_manualStep2()">رجوع</button>
+      // Filter oils that contain the selected viscosity and have enough quantity
+      const availableOils = oilFilter_stockData
+        .filter(oil => {
+          // Check quantity
+          const hasEnoughQuantity = oil.contAvailable >= oilFilter_liters && oil.contAvailable > 0;
+
+          // Check viscosity match
+          const oilViscs = oilFilter_parseViscosityList(oil.type);
+          const viscosityMatches = oilViscs.some(oilVisc => selectedViscs.includes(oilVisc));
+
+          return hasEnoughQuantity && viscosityMatches;
+        });
+
+      // Sort by price (lowest to highest)
+      availableOils.sort((a, b) => (a.effectivePriceLiter * oilFilter_liters) - (b.effectivePriceLiter * oilFilter_liters));
+
+      console.log('=== MANUAL CALCULATOR OIL FILTER DEBUG ===');
+      console.log('Selected Viscosity:', oilFilter_selectedViscosity);
+      console.log('Required Liters:', oilFilter_liters);
+      console.log('Available oils after filter:', availableOils);
+
+      const resultsHtml = availableOils.length > 0 ? availableOils.map(oil => {
+        const oilTotal = oil.effectivePriceLiter * oilFilter_liters;
+        const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
+        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${oilFilter_liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك
+
+مناسب للزيت: ${oilFilter_selectedViscosity}`;
+        return `
+          <div class="oil-card" onclick="oilFilter_selectManualOil(${availableOils.indexOf(oil)})">
+            <div class="oil-card-header">
+              <h4>${escapeHtml(oilFilter_translateBrand(oil.brand))}</h4>
+              <span class="oil-price">${grandTotal.toFixed(2)} د.ك</span>
+            </div>
+            <div class="oil-card-details">
+              <p>اللزوجة: ${escapeHtml(oil.type)}</p>
+              <p>الكمية: ${oilFilter_liters} لتر</p>
+              <p>المتوفر: ${oil.contAvailable} لتر</p>
+              <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
+            </div>
+            <button class="btn-primary oil-copy-btn" onclick="event.stopPropagation(); oilFilter_copyMessage('${message.replace(/'/g, "\\'")}')">نسخ العرض</button>
           </div>
         `;
-        return;
-      }
+      }).join('') : `
+          <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
+            <p>❌ لا توجد زيوت متاحة حالياً للكمية المطلوبة (${oilFilter_liters} لتر) واللزوجة المطلوبة (${oilFilter_selectedViscosity}).</p>
+            <p>تأكد من:</p>
+            <ul style="text-align:right;">
+              <li>توفر الكمية المطلوبة في المخزن</li>
+              <li>مطابقة اللزوجة مع الزيوت المتوفرة</li>
+              <li>تحديث بيانات المخزن (Sheet: Stock)</li>
+            </ul>
+          </div>
+        `;
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-            <h3 class="section-title">الحاسبة اليدوية - خطوة 3: الماركة</h3>
-            <button class="btn-back" onclick="oilFilter_manualStep2()">رجوع</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px; flex-wrap:wrap;">
+            <div>
+              <h3 class="section-title">الحاسبة اليدوية - الزيوت المتاحة</h3>
+              <div style="margin-top:8px;color:#ddd;line-height:1.6;">
+                <div><strong>اللزوجة المطلوبة:</strong> ${escapeHtml(oilFilter_selectedViscosity)}</div>
+                <div><strong>الكمية المطلوبة:</strong> ${oilFilter_liters} لتر</div>
+                <div><strong>نوع الفلتر:</strong> ألماني (${oilFilter_filterPrice} د.ك)</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-secondary" onclick="oilFilter_changeFilterType()">تغيير نوع الفلتر</button>
+              <button class="btn-back" onclick="oilFilter_manualStep2()">رجوع</button>
+            </div>
           </div>
-          <div class="service-options">
-            ${oils.map((oil, index) => `<button class="btn-option" data-oil-index="${index}">${escapeHtml(oilFilter_translateBrand(oil.brand))}</button>`).join('')}
+          <div class="oil-results-grid">
+            ${resultsHtml}
           </div>
         </div>
       `;
-
-      document.querySelectorAll('[data-oil-index]').forEach(btn => {
-        btn.onclick = () => {
-          const index = parseInt(btn.dataset.oilIndex, 10);
-          oilFilter_selectedOil = oils[index];
-          oilFilter_manualStep4();
-        };
-      });
     }
 
-    function oilFilter_manualStep4() {
-      oilFilter_currentStep = 'manualstep4';
+
+
+    function oilFilter_changeFilterType() {
+      oilFilter_currentStep = 'manualfilter';
       const contentArea = document.getElementById('contentArea');
       contentArea.innerHTML = `
         <div class="form-section full-width">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-            <h3 class="section-title">الحاسبة اليدوية - خطوة 4: نوع الفلتر</h3>
+            <h3 class="section-title">تغيير نوع الفلتر</h3>
             <button class="btn-back" onclick="oilFilter_manualStep3()">رجوع</button>
           </div>
           <div class="service-options">
@@ -13012,10 +13055,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         btn.onclick = () => {
           if (btn.dataset.filter === 'german') {
             oilFilter_filterPrice = 12;
-            oilFilter_showInvoice();
+            oilFilter_manualStep3();
           } else if (btn.dataset.filter === 'other') {
             oilFilter_filterPrice = 8;
-            oilFilter_showInvoice();
+            oilFilter_manualStep3();
           } else if (btn.dataset.filter === 'custom') {
             document.getElementById('customFilterPriceManual').classList.remove('hidden');
           }
@@ -13023,23 +13066,35 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       });
     }
 
-    function oilFilter_setCustomFilterManual() {
-      const price = parseFloat(document.getElementById('customFilterInputManual').value) || 0;
-      oilFilter_filterPrice = price;
-      oilFilter_showInvoice();
+    function oilFilter_selectManualOil(oilIndex) {
+      const availableOils = oilFilter_getAvailableOils();
+      const oil = availableOils[oilIndex];
+      if (!oil) return;
+
+      const oilTotal = oil.price * oilFilter_liters;
+      const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
+
+      const message = `زيت ${oilFilter_translateBrand(oil.brand)} ${oil.type}
+الكمية: ${oilFilter_liters} لتر
+السعر: ${oil.price} د.ك × ${oilFilter_liters} = ${oilTotal.toFixed(2)} د.ك
+فلتر: ${oilFilter_filterPrice} د.ك
+خدمة: ${oilFilter_servicePrice} د.ك
+الإجمالي: ${grandTotal.toFixed(2)} د.ك`;
+
+      oilFilter_showInvoice(oil, message);
     }
 
-    function oilFilter_showInvoice() {
+    function oilFilter_showInvoice(selectedOil = null, customMessage = null) {
       oilFilter_currentStep = 'invoice';
       const contentArea = document.getElementById('contentArea');
-      const oil = oilFilter_selectedOil;
+      const oil = selectedOil || oilFilter_selectedOil;
       const car = oilFilter_selectedCar;
       const liters = car ? car.liters : oilFilter_liters;
       const effectivePriceLiter = oil.effectivePriceLiter;
       const oilTotal = effectivePriceLiter * liters;
       const total = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
 
-      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك
+      const message = customMessage || `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك
 
 مناسب لسيارة: ${car ? oilFilter_getArabicCarName(car.carModel) : 'غير محدد'}`;
 
@@ -13047,7 +13102,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         <div class="form-section full-width">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
             <h3 class="section-title">الفاتورة النهائية</h3>
-            <button class="btn-back" onclick="${oilFilter_currentStep === 'results' ? 'oilFilter_showResults()' : 'oilFilter_manualStep4()'}">رجوع</button>
+            <button class="btn-back" onclick="${oilFilter_currentStep === 'results' ? 'oilFilter_showResults()' : 'oilFilter_manualStep3()'}">رجوع</button>
           </div>
           <div class="invoice-details">
             <p><strong>الزيت:</strong> ${escapeHtml(oilFilter_translateBrand(oil.brand))} - ${escapeHtml(oil.type)}</p>
