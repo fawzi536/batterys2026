@@ -550,16 +550,22 @@
     }
     
     .btn-option {
-      background: #2a2a2a;
-      border: 1px solid #404040;
-      border-radius: 4px;
-      padding: 10px 8px;
+      background: #1f1f1f;
+      border: 1px solid rgba(242, 188, 27, 0.35);
+      border-radius: 8px;
+      padding: 14px 16px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
-      font-size: 13px;
-      color: #ccc;
-      font-weight: 600;
+      font-size: 15px;
+      color: #f3f3f3;
+      font-weight: 700;
+      min-height: 52px;
+      min-width: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
     }
     
     .btn-option:hover {
@@ -1232,8 +1238,12 @@
 
     .oil-card-details p {
       margin: 6px 0;
-      font-size: 14px;
-      color: #ccc;
+    }
+
+    .major-service-info {
+      cursor: pointer;
+      color: #F2BC1B;
+      font-size: 16px;
     }
 
     .service-options {
@@ -1241,6 +1251,13 @@
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 12px;
       margin-top: 12px;
+    }
+
+    .oil-service-options {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
     }
 
     .invoice-details {
@@ -1273,6 +1290,7 @@
       padding: 10px;
       border-radius: 4px;
       cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
     }
 
     .oil-copy-btn:hover {
@@ -1281,6 +1299,10 @@
 
     .oil-copy-btn.success {
       background: #16a34a;
+    }
+
+    .oil-copy-btn.failure {
+      background: #dc2626;
     }
 
     .driver-filters {
@@ -2295,6 +2317,20 @@
     .prot-important{ margin-top:12px; padding:12px; border-radius:8px; background: rgba(127,29,29,0.04); border:1px solid #ef4444; color:#ffb3b3; font-weight:700 }
     .prot-toast{ position:fixed; top:80px; right:40px; background:#F2BC1B; color:#000; padding:12px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.12); box-shadow:0 12px 40px rgba(0,0,0,0.6); display:none; z-index:1500; font-weight:700 }
     .battery-toast{ position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-20px) scale(0.95); background:#10b981; color:#fff; padding:18px 28px; border-radius:20px; border:2px solid rgba(255,255,255,0.3); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(16,185,129,0.4); display:none; z-index:2000; font-weight:700; font-size:15px; transition:all 0.3s ease; text-align:center; max-width:90%; white-space:nowrap; }
+    .tire-increase-wrapper { display: grid; grid-template-columns: minmax(180px, 220px) minmax(320px, 1fr) minmax(180px, 220px); gap: 12px; align-items: start; }
+    .tire-increase-sidebar { background: rgba(12, 12, 12, 0.95); border: 1px solid rgba(242, 188, 27, 0.18); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 760px; overflow: auto; }
+    .tire-increase-sidebar .sidebar-title { font-size: 13px; color: #F2BC1B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+    .tire-brand-list, .tire-increase-list { display: grid; gap: 8px; }
+    .tire-brand-button, .tire-increase-button { background: #161616; border: 1px solid #333; border-radius: 10px; color: #F2BC1B; padding: 10px 12px; cursor: pointer; transition: all 0.18s ease; text-align: right; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; }
+    .tire-brand-button:hover, .tire-increase-button:hover { background: #1f1f1f; border-color: #F2BC1B; transform: translateX(-1px); }
+    .tire-brand-button.active, .tire-increase-button.active { background: #F2BC1B; color: #000; }
+    .tire-increase-main { display: flex; flex-direction: column; gap: 12px; }
+    .tire-increase-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+    .tire-increase-output-box { background: #090909; border: 1px solid #333; border-radius: 10px; min-height: 250px; padding: 14px; overflow: auto; }
+    .tire-increase-output { font-family: 'Cairo', sans-serif; white-space: pre-wrap; line-height: 1.6; color: #e9e9e9; min-height: 220px; margin: 0; }
+    .tire-note { background: rgba(242,188,27,0.08); border: 1px solid rgba(242,188,27,0.18); color: #f7e1a3; border-radius: 10px; padding: 10px; font-size: 13px; line-height: 1.5; }
+    .tire-increase-button-row { display: grid; gap: 8px; }
+    .tire-increase-sidebar .btn-inline { justify-content: flex-start; }
     /* Coordinates toast */
     .coords-toast{position:fixed;bottom:24px;left:24px;min-width:200px;max-width:calc(100vw - 48px);z-index:2200;padding:12px 16px;border-radius:10px;color:#000;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,0.45);display:none}
     .coords-toast.success{background:#10b981;color:#fff}
@@ -2857,6 +2893,185 @@
       return rows;
     }
 
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise((resolve, reject) => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          resolve();
+        } catch (err) {
+          document.body.removeChild(ta);
+          reject(err);
+        }
+      });
+    }
+
+    function showToast(message, type = 'success', duration = 1800) {
+      let toast = document.getElementById('global-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'global-toast';
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.padding = '12px 16px';
+        toast.style.borderRadius = '10px';
+        toast.style.fontWeight = '700';
+        toast.style.zIndex = '2500';
+        toast.style.boxShadow = '0 18px 40px rgba(0,0,0,0.35)';
+        toast.style.maxWidth = 'calc(100vw - 40px)';
+        toast.style.wordBreak = 'break-word';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.style.background = type === 'error' ? '#ef4444' : '#10b981';
+      toast.style.color = '#fff';
+      toast.style.display = 'block';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.style.display = 'none';
+      }, duration);
+    }
+
+    const TIRE_BRAND_RULES = [
+      { pattern: /\bBG2\b/i, name: 'بريدجستون بولندي 🇵🇱' },
+      { pattern: /\bBG\b|BRIDGESTONE/i, name: 'بريدجستون ياباني 🇯🇵' },
+      { pattern: /\bPR\b|PIRELLI/i, name: 'بيريلي اوربي 🇪🇺' },
+      { pattern: /\bMC\b|MICHELIN/i, name: 'ميشلان فرنسي 🇫🇷' },
+      { pattern: /\bYK\b|YOKOHAMA.*JAPAN|YOKOHAMA JAPAN|YOKOHAMA/i, name: 'يوكوهاما ياباني 🇯🇵' },
+      { pattern: /\bYF\b|YOKOHAMA.*PHILIPPINES|YOKOHAMA PHILIPPINES/i, name: 'يوكوهاما فلبيني 🇵🇭' },
+      { pattern: /\bYT\b|YOKOHAMA.*THAILAND|YOKOHAMA THAILAND/i, name: 'يوكوهاما تايلندي 🇹🇭' },
+      { pattern: /\bDP\b|DUNLOP/i, name: 'دنلوب ياباني 🇯🇵' },
+      { pattern: /\bKF\b|KING\s*FOREST|KINGFOREST/i, name: 'كين فورست صيني 🇨🇳' },
+      { pattern: /\bBW\b|BERWAY|BLACKWAY/i, name: 'بيرواي صيني 🇨🇳' },
+      { pattern: /\bRD\b|RODTSON/i, name: 'رودتسون كوري 🇰🇷' },
+      { pattern: /\bFK\b|FALKEN/i, name: 'فالكن ياباني 🇯🇵' },
+      { pattern: /\bNX\b|NEXEN/i, name: 'نكسن كوري 🇰🇷' },
+      { pattern: /\bBF\b|BFGOODRICH/i, name: 'BFGoodrich أمريكي 🇺🇸' },
+      { pattern: /GOODYEAR.*GERMANY|GOODYEAR.*DE|GOODYEAR GERMANY/i, name: 'قودير ألماني 🇩🇪' },
+      { pattern: /GOODYEAR/i, name: 'قودير أمريكي 🇺🇸' },
+      { pattern: /CONTINENTAL|CONTINENTAL GERMANY/i, name: 'كونتيننتال ألماني 🇩🇪' },
+      { pattern: /HANKOOK/i, name: 'هانكوك كوري 🇰🇷' }
+    ];
+
+    const TIRE_EXTRA_TRANSLATIONS = [
+      { pattern: /\bFRONT\b/i, value: 'أمامي' },
+      { pattern: /\bREAR\b/i, value: 'خلفي' },
+      { pattern: /\bRUN\s*FLAT\b/i, value: 'رن فلات' },
+      { pattern: /\bRFT\b/i, value: 'رن فلات' },
+      { pattern: /\bLIMITED\s*QTY\b/i, value: 'عدد محدود' },
+      { pattern: /\bQUARTER\s*HAJARI\b|\bLT\b/i, value: 'ربع حجري' },
+      { pattern: /\bFULL\s*HAJRI\b/i, value: 'فل حجري' }
+    ];
+
+    function detectTireBrand(text) {
+      for (const rule of TIRE_BRAND_RULES) {
+        if (rule.pattern.test(text)) {
+          return rule.name;
+        }
+      }
+      return null;
+    }
+
+    function translateExtraTerms(text) {
+      let result = text;
+      for (const item of TIRE_EXTRA_TRANSLATIONS) {
+        result = result.replace(item.pattern, item.value);
+      }
+      return result.replace(/\s{2,}/g, ' ').trim();
+    }
+
+    function formatTirePrice(value) {
+      if (Number.isNaN(value) || value === null) return 'غير محدد';
+      const rounded = Math.round(value * 100) / 100;
+      return Number.isInteger(rounded) ? rounded.toString() : rounded.toFixed(2).replace(/\.00$/, '');
+    }
+
+    function extractYear(text) {
+      const match = text.match(/\b(19|20)\d{2}\b/);
+      return match ? Number(match[0]) : null;
+    }
+
+    function extractPrice(text, year) {
+      const normalized = text.replace(/\b\d{3}\/\d{2}R\d{2}\b/gi, ' ');
+      const numbers = (normalized.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+      if (!numbers.length) return null;
+      if (year !== null) {
+        const price = numbers.find(num => num !== year);
+        return price !== undefined ? price : numbers[0];
+      }
+      return numbers[0];
+    }
+
+    function isTireSizeOnly(line) {
+      return /^\s*\d{3}\/\d{2}R\d{2}\s*$/i.test(line);
+    }
+
+    function cleanLineText(line) {
+      const withoutParentheses = line.replace(/\(.*?\)/g, ' ');
+      const withoutNumbers = withoutParentheses.replace(/\d+(?:\.\d+)?/g, ' ');
+      const withoutSize = withoutNumbers.replace(/\b\d{3}\/\d{2}R\d{2}\b/gi, ' ');
+      const cleaned = withoutSize.replace(/[()]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+      return translateExtraTerms(cleaned || 'سعر الإطار');
+    }
+
+    function calculateTireLine(line, increaseValue) {
+      const trimmed = line.trim();
+      if (!trimmed) return '';
+      if (isTireSizeOnly(trimmed)) return trimmed;
+
+      const year = extractYear(trimmed);
+      const price = extractPrice(trimmed, year);
+      if (price === null) return trimmed;
+
+      const isMichelin = /\bMICHELIN\b|\bMC\b|ميشلان/i.test(trimmed);
+      let finalPrice = price;
+
+      if (isMichelin && year === 2024) {
+        finalPrice = price * 0.6 + 15;
+      } else if (isMichelin && year === 2025) {
+        finalPrice = price * 0.7 + 15;
+      } else if (!Number.isNaN(increaseValue) && increaseValue !== null && increaseValue !== '') {
+        if (increaseValue >= 1) {
+          finalPrice = price + increaseValue;
+        } else if (increaseValue > 0) {
+          finalPrice = price - (price * increaseValue);
+        }
+      }
+
+      const brand = detectTireBrand(trimmed);
+      const header = brand || cleanLineText(trimmed);
+      const yearText = year ? `سنة الصنع ${year}. ` : '';
+      return `${header} ${yearText}سعر الواحد ${formatTirePrice(finalPrice)} د.ك`;
+    }
+
+    function processTireIncreaseInput(text, increaseValue) {
+      const lines = text.split(/\r?\n/);
+      const results = lines.map(line => {
+        if (!line.trim()) return '';
+        return calculateTireLine(line, increaseValue);
+      }).filter(Boolean);
+      return results.join('\n');
+    }
+
+    function insertAtCursor(el, value) {
+      const start = el.selectionStart || 0;
+      const end = el.selectionEnd || 0;
+      const current = el.value || '';
+      el.value = `${current.slice(0, start)}${value}${current.slice(end)}`;
+      el.selectionStart = el.selectionEnd = start + value.length;
+      el.focus();
+    }
+
     // Load all sheets
     async function loadAllSheets() {
       try {
@@ -3210,7 +3425,7 @@
             openFullscreenIframe('https://portiers.netlify.app/', 'شيت التواير');
             break;
           case 'tireIncrease':
-            openFullscreenIframe('https://forfamilyr.vercel.app/', 'زيادات التواير');
+            renderTireIncreaseInterface();
             break;
           case 'tire_lop':
             renderLopInterface();
@@ -3259,6 +3474,169 @@
     function renderBatterySubscriptionInterface() {
       renderServiceWithDatalist('اشتراك بطارية', 'خدمات5', [0, 1, 2, 4, 5, 6], 
         '<div class="info-box">في حال العميل يبي فحص بطارية: 10 د.ك تنخصم من سعر البطارية</div>');
+    }
+
+    function renderTireIncreaseInterface() {
+      const contentArea = document.getElementById('contentArea');
+      contentArea.innerHTML = `
+        <div class="form-section full-width">
+          <h3 class="section-title">زيادات التواير</h3>
+          <div class="tire-increase-wrapper">
+            <div class="tire-increase-sidebar">
+              <div class="sidebar-title">اختصارات التواير</div>
+              <div class="tire-brand-list">
+                ${[
+                  { code: 'PR', label: 'PR - بيريلي' },
+                  { code: 'YK', label: 'YK - يوكوهاما ياباني' },
+                  { code: 'YF', label: 'YF - يوكوهاما فلبيني' },
+                  { code: 'YT', label: 'YT - يوكوهاما تايلندي' },
+                  { code: 'DP', label: 'DP - دنلوب ياباني' },
+                  { code: 'BG', label: 'BG - بريدجستون ياباني' },
+                  { code: 'BG2', label: 'BG2 - بريدجستون بولندي' },
+                  { code: 'KF', label: 'KF - كين فورست' },
+                  { code: 'BW', label: 'BW - بيرواي' },
+                  { code: 'RD', label: 'RD - رودتسون' },
+                  { code: 'FK', label: 'FK - فالكن' },
+                  { code: 'NX', label: 'NX - نكسن' },
+                  { code: 'MC', label: 'MC - ميشلان' },
+                  { code: 'BF', label: 'BF - BFGoodrich' },
+                  { code: 'YOKOHAMA', label: 'YOKOHAMA - يوكوهاما' },
+                  { code: 'GOODYEAR', label: 'GOODYEAR - قودير' },
+                  { code: 'CONTINENTAL', label: 'CONTINENTAL - كونتيننتال' },
+                  { code: 'MICHELIN 2024', label: 'ميشلان 2024' },
+                  { code: 'MICHELIN 2025', label: 'ميشلان 2025' }
+                ].map(item => `<button type="button" class="tire-brand-button" data-code="${item.code}">${item.label}</button>`).join('')}
+              </div>
+              <div class="tire-note">اضغط رمز لنسخه داخل النص. يمكن استخدام الكلمات العربية أو الحروف الانجليزية.</div>
+            </div>
+            <div class="tire-increase-main">
+              <div class="form-field">
+                <label>أدخل سطور الإطارات</label>
+                <textarea id="tireIncreaseInput" class="form-control" rows="10" placeholder="مثال:\nPR 2023 25\nYK 2022 18\n205/55R16"></textarea>
+              </div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>الزيادة / القيمة</label>
+                  <input id="tireIncreaseRate" class="form-control" type="number" step="0.01" placeholder="مثال 15 أو 0.10" />
+                </div>
+                <div class="form-field">
+                  <label>خيارات زيادات سريعة</label>
+                  <div class="tire-increase-button-row">
+                    ${[
+                      { value: '17', label: 'ساردار +17' },
+                      { value: '15', label: 'فرج حولي +15' },
+                      { value: '15', label: 'سوميتومو +15' },
+                      { value: '15', label: 'نيتو +15' },
+                      { value: '13', label: 'زيتيكس +13' },
+                      { value: '21', label: 'برجستون +21' },
+                      { value: '0.10', label: 'بيريلي 10%' }
+                    ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
+                  </div>
+                </div>
+              </div>
+              <div class="tire-increase-actions">
+                <button id="tireCalcBtn" class="btn-primary btn-inline">تحديث النتائج</button>
+                <button id="tireCopyBtn" class="btn-outline btn-inline">نسخ النتائج</button>
+                <button id="tireClearBtn" class="btn-outline btn-inline">مسح</button>
+              </div>
+              <div class="tire-increase-output-box">
+                <pre id="tireIncreaseOutput" class="tire-increase-output">أدخل البيانات والزيادة لتظهر النتائج هنا.</pre>
+              </div>
+            </div>
+            <div class="tire-increase-sidebar">
+              <div class="sidebar-title">زيادات ثابتة</div>
+              <div class="tire-increase-list">
+                ${[
+                  { value: '13', label: 'الميلم +13' },
+                  { value: '15', label: 'الساير يوكاهما +15' },
+                  { value: '13', label: 'برلين +13' },
+                  { value: '13', label: 'البابطين +13' },
+                  { value: '15', label: 'كوبر +15' },
+                  { value: '13', label: 'اوتو ون +13' },
+                  { value: '15', label: 'اف تي سي +15' },
+                  { value: '13', label: 'بلاك ارو +13' },
+                  { value: '15', label: 'دنيا الخير +15' },
+                  { value: '12', label: 'الغانم موتري كوري +12' },
+                  { value: '15', label: 'الغانم موتري صيني +15' }
+                ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
+              </div>
+              <div class="tire-note">إذا كان السطر يحتوي فقط على المقاس، سيبقى كما هو دون معالجة.</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const textarea = document.getElementById('tireIncreaseInput');
+      const increaseInput = document.getElementById('tireIncreaseRate');
+      const output = document.getElementById('tireIncreaseOutput');
+      const brandButtons = contentArea.querySelectorAll('.tire-brand-button');
+      const increaseButtons = contentArea.querySelectorAll('.tire-increase-button');
+      const calcBtn = document.getElementById('tireCalcBtn');
+      const copyBtn = document.getElementById('tireCopyBtn');
+      const clearBtn = document.getElementById('tireClearBtn');
+
+      function renderOutput() {
+        const increaseValue = parseFloat(increaseInput.value);
+        const resultText = processTireIncreaseInput(textarea.value, Number.isNaN(increaseValue) ? '' : increaseValue);
+        output.textContent = resultText || 'لا توجد بيانات صحيحة. تأكد من أن السطور تحتوي على اسم السنة والسعر.';
+      }
+
+      function handleBrandClick(code) {
+        if (code === 'MICHELIN 2024' || code === 'MICHELIN 2025') {
+          const year = code.endsWith('2024') ? '2024' : '2025';
+          const price = prompt(`أدخل سعر المورد لميشلان ${year}`, '');
+          if (!price) return;
+          const parsed = parseFloat(price.replace(/,/g, '.'));
+          if (Number.isNaN(parsed)) {
+            showToast('الرجاء إدخال رقم صالح', 'error');
+            return;
+          }
+          insertAtCursor(textarea, `MC ${year} ${parsed}\n`);
+          renderOutput();
+          return;
+        }
+        insertAtCursor(textarea, `${code} `);
+        renderOutput();
+      }
+
+      brandButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          handleBrandClick(btn.dataset.code || '');
+        });
+      });
+
+      increaseButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          increaseInput.value = btn.dataset.value || '';
+          renderOutput();
+        });
+      });
+
+      textarea.addEventListener('input', renderOutput);
+      increaseInput.addEventListener('input', renderOutput);
+      calcBtn.addEventListener('click', renderOutput);
+      clearBtn.addEventListener('click', () => {
+        textarea.value = '';
+        increaseInput.value = '';
+        output.textContent = 'أدخل البيانات والزيادة لتظهر النتائج هنا.';
+        textarea.focus();
+      });
+
+      copyBtn.addEventListener('click', async () => {
+        const text = output.textContent || '';
+        if (!text.trim()) {
+          showToast('لا يوجد نص للنسخ', 'error');
+          return;
+        }
+        try {
+          await copyToClipboard(text);
+          showToast('تم النسخ ✅');
+        } catch (err) {
+          showToast('فشل النسخ تلقائياً', 'error');
+        }
+      });
+
+      renderOutput();
     }
 
     // Render Installments Interface
@@ -9196,7 +9574,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             const startTime = formatTimeSimple(slot.start);
             // show latest allowed START time (slot.latestStart) as the window end
             const endTime = formatTimeSimple(slot.latestStart);
-            ranges.push(`من ${startTime} إلى ${endTime}`);
+            ranges.push(`من ${startTime} إلى ${endTime}`); 
           });
 
           return ranges.join(' • وأيضاً ');
@@ -10029,6 +10407,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           updateInsuranceSuggestions(query);
         }
         
+        
         searchTimeout = setTimeout(() => {
           if (query.length >= 2) {
             searchInsurance(query);
@@ -10140,7 +10519,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         if (!area) {
           document.getElementById('protResult').classList.add('hidden');
           return;
+
         }
+
+
         // Automatically choose destination to 'شويخ'
         const dest = 'شويخ';
         // compute price using portarage normal tow routes
@@ -12430,9 +12812,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       contentArea.innerHTML = `
         <div class="form-section full-width">
           <h3 class="section-title">زيت وفلتر</h3>
-          <div class="service-options">
+          <div class="oil-service-options" style="display:flex;gap:10px;flex-wrap:nowrap;align-items:center;">
             <button class="btn-option" data-action="carlist">قائمة السيارات</button>
             <button class="btn-option" data-action="manual">الحاسبة اليدوية</button>
+            <button class="btn-option" data-action="admin">فتح لوحة التحكم (الشيت)</button>
           </div>
         </div>
       `;
@@ -12443,6 +12826,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             oilFilter_showCarList();
           } else if (btn.dataset.action === 'manual') {
             oilFilter_showManualCalculator();
+          } else if (btn.dataset.action === 'admin') {
+            window.open('https://docs.google.com/spreadsheets/d/1ax4pCBDTm6Vkq-MZjmmOY1dgwKCUQS5x1GeffkUYOzI/edit?usp=sharing', '_blank');
           }
         };
       });
@@ -12617,7 +13002,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         'WAGNER': 'واجنر الماني 🇩🇪',
         'DUCKHAMS': 'داكهام بريطاني 🇬🇧',
         'BIZOL': 'بيزول الماني 🇩🇪',
-        'VICTOR': 'فيكتور ألماني 🇩🇪',
+        'VICTOR': 'فيكتور الماني 🇩🇪',
         'LIQUI MOLY': 'ليكي مولي الماني 🇩🇪',
         'MOTORCRAFT': 'موتركرافت امريكي 🇺🇸',
         'G-ENERGY': 'جي-إنرجي إيطالي 🇮🇹',
@@ -12650,7 +13035,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
                 <tr>
                   <th>نموذج السيارة</th>
                   <th>نوع الزيت (اللزوجة)</th>
-                  <th></th>
+                  <th>التصفية العامة</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -12678,7 +13063,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         tr.innerHTML = `
           <td>${escapeHtml(car.carModel)}</td>
           <td>${escapeHtml(car.oilType || '')}</td>
-          <td>${car.majorService > 0 ? '<button class="btn-info" onclick="oilFilter_showMajorService(event, ' + car.majorService + ')">ℹ️</button>' : ''}</td>
+          <td>${car.majorService > 0 ? car.majorService + ' د.ك' : ''}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -12698,7 +13083,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             <h3 class="section-title">اختيار نوع الفلتر</h3>
             <button class="btn-back" onclick="oilFilter_showCarList()">رجوع</button>
           </div>
-          <div class="service-options">
+          <div class="oil-service-options">
             <button class="btn-option" data-filter="german">ألمانية (12 د.ك)</button>
             <button class="btn-option" data-filter="other">أمريكية/يابانية/كورية (8 د.ك)</button>
             <button class="btn-option" data-filter="custom">أخرى (أدخل السعر)</button>
@@ -12753,10 +13138,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       });
       availableOils.sort((a, b) => (a.effectivePriceLiter * car.liters) - (b.effectivePriceLiter * car.liters));
 
-      const resultsHtml = availableOils.length > 0 ? availableOils.map(oil => {
+      const resultsHtml = availableOils.length > 0 ? availableOils.map((oil, index) => {
         const oilTotal = oil.effectivePriceLiter * car.liters;
         const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
-        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(2)} دك\n\nمناسب لسيارة: ${oilFilter_getArabicCarName(car.carModel)}`;
+        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${car.liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(3)} دك`;
         return `
           <div class="oil-card">
             <div class="oil-card-header">
@@ -12765,9 +13150,11 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
             <div class="oil-card-details">
               <p>اللزوجة: ${escapeHtml(oil.type)}</p>
+              <p>سعر اللتر الواحد: ${oil.effectivePriceLiter.toFixed(2)} د.ك</p>
               <p>الكمية: ${car.liters} لتر</p>
               <p>المتوفر: ${oil.contAvailable} لتر</p>
               <p>تفاصيل: زيت ${oilTotal.toFixed(2)} + فلتر ${oilFilter_filterPrice} + خدمة ${oilFilter_servicePrice}</p>
+              <p>التصفية العامة: ${car.majorService > 0 ? car.majorService : 'غير متوفر'} د.ك <span class="major-service-info" onclick="oilFilter_showMajorService(event, ${car.majorService || 0})">ℹ️</span></p>
             </div>
             <button class="btn-primary oil-copy-btn" type="button" data-copy-message="${escapeAttribute(message)}">نسخ العرض</button>
           </div>
@@ -12790,6 +13177,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           </div>
         </div>
       `;
+      oilFilter_attachCopyButtons();
     }
 
     function oilFilter_selectOil(oil) {
@@ -12804,12 +13192,21 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         <div class="form-section full-width">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
             <h3 class="section-title">الحاسبة اليدوية - خطوة 1: عدد اللترات</h3>
-            <button class="btn-back" onclick="renderOilFilterInterface()">رجوع</button>
+            <button class="btn-back" onclick="renderOilFilterInterface()">رجوع إلى القائمة</button>
           </div>
           <input type="number" id="manualLiters" placeholder="أدخل عدد اللترات" class="form-control">
           <button class="btn-primary" onclick="oilFilter_manualStep2()">التالي</button>
         </div>
       `;
+      const manualInput = document.getElementById('manualLiters');
+      if (manualInput) {
+        manualInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            oilFilter_manualStep2();
+          }
+        });
+      }
     }
 
     function oilFilter_manualStep2() {
@@ -12823,7 +13220,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         contentArea.innerHTML = `
           <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
             <p>أدخل عدد اللترات أولاً ثم اضغط التالي.</p>
-            <button class="btn-primary" onclick="oilFilter_showManualCalculator()">رجوع</button>
+            <button class="btn-primary" onclick="oilFilter_showManualCalculator()">العودة</button>
           </div>
         `;
         return;
@@ -12834,7 +13231,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
             <p>لا توجد زيوت متاحة للكمية ${oilFilter_liters} لتر.</p>
             <p>تحقق من كمية المخزون في جدول Stock أو جرب كمية أقل.</p>
-            <button class="btn-primary" onclick="oilFilter_showManualCalculator()">رجوع</button>
+            <button class="btn-primary" onclick="oilFilter_showManualCalculator()">العودة</button>
           </div>
         `;
         return;
@@ -12844,9 +13241,9 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         <div class="form-section full-width">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
             <h3 class="section-title">الحاسبة اليدوية - خطوة 2: اللزوجة</h3>
-            <button class="btn-back" onclick="oilFilter_showManualCalculator()">رجوع</button>
+            <button class="btn-back" onclick="oilFilter_showManualCalculator()">رجوع إلى القائمة</button>
           </div>
-          <div class="service-options">
+          <div class="oil-service-options">
             ${viscosities.map(v => `<button class="btn-option" data-viscosity="${escapeHtml(v)}">${escapeHtml(v)}</button>`).join('')}
           </div>
         </div>
@@ -12867,9 +13264,9 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         <div class="form-section full-width">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
             <h3 class="section-title">الحاسبة اليدوية - خطوة 3: نوع الفلتر</h3>
-            <button class="btn-back" onclick="oilFilter_manualStep2()">رجوع</button>
+            <button class="btn-back" onclick="oilFilter_showManualCalculator()">رجوع إلى القائمة</button>
           </div>
-          <div class="service-options">
+          <div class="oil-service-options">
             <button class="btn-option" data-filter="german">ألمانية (12 د.ك)</button>
             <button class="btn-option" data-filter="other">أمريكية/يابانية/كورية (8 د.ك)</button>
             <button class="btn-option" data-filter="custom">أخرى (أدخل السعر)</button>
@@ -12880,6 +13277,15 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           </div>
         </div>
       `;
+      const customFilterInputManual = document.getElementById('customFilterInputManual');
+      if (customFilterInputManual) {
+        customFilterInputManual.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            oilFilter_setCustomFilterManual();
+          }
+        });
+      }
 
       document.querySelectorAll('[data-filter]').forEach(btn => {
         btn.onclick = () => {
@@ -12907,16 +13313,16 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         contentArea.innerHTML = `
           <div class="form-section full-width" style="text-align:center; padding:24px; color:#ddd;">
             <p>لا توجد زيوت متاحة لللزوجة ${escapeHtml(oilFilter_selectedViscosity)} والكمية ${oilFilter_liters} لتر.</p>
-            <button class="btn-primary" onclick="oilFilter_manualStep2()">رجوع</button>
+            <button class="btn-primary" onclick="oilFilter_manualStep2()">العودة</button>
           </div>
         `;
         return;
       }
 
-      const resultsHtml = oils.map(oil => {
+      const resultsHtml = oils.map((oil, index) => {
         const oilTotal = oil.effectivePriceLiter * oilFilter_liters;
         const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
-        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${oilFilter_liters} لتر) ودرجة اللزوجة ${oil.type}. السعر: ${grandTotal.toFixed(2)} د.ك. فلتر: ${oilFilter_filterPrice} د.ك. خدمة: ${oilFilter_servicePrice} د.ك.`;
+        const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${oilFilter_liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(3)} دك`;
         return `
           <div class="oil-card">
             <div class="oil-card-header">
@@ -12925,8 +13331,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
             </div>
             <div class="oil-card-details">
               <p><strong>اللزوجة:</strong> ${escapeHtml(oil.type)}</p>
+              <p><strong>سعر اللتر الواحد:</strong> ${oil.effectivePriceLiter.toFixed(2)} د.ك</p>
               <p><strong>كمية السيارة:</strong> ${oilFilter_liters} لتر</p>
-              <p><strong>السعر للتر:</strong> ${oil.effectivePriceLiter.toFixed(2)} د.ك</p>
               <p><strong>المتوفر:</strong> ${oil.contAvailable} لتر</p>
             </div>
             <button class="btn-primary oil-copy-btn" type="button" data-copy-message="${escapeAttribute(message)}">نسخ العرض</button>
@@ -12941,7 +13347,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <h3 class="section-title">الزيوت المتاحة</h3>
               <p style="color:#ccc; margin: 4px 0 0;">اللزوجة: ${escapeHtml(oilFilter_selectedViscosity)} — الفلتر: ${oilFilter_filterPrice} د.ك</p>
             </div>
-            <button class="btn-back" onclick="oilFilter_manualStep3()">رجوع</button>
+            <button class="btn-back" onclick="renderOilFilterInterface()">رجوع إلى القائمة</button>
           </div>
           <div class="oil-results-grid">
             ${resultsHtml}
@@ -12968,8 +13374,8 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       const oilTotal = effectivePriceLiter * liters;
       const total = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
 
-      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(2)} دك\n\nمناسب لسيارة: ${car ? oilFilter_getArabicCarName(car.carModel) : 'غير محدد'}`;
-      const backAction = car ? 'oilFilter_showResults()' : 'oilFilter_manualStep3()';
+      const message = `متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${total.toFixed(3)} دك`;
+      const backAction = car ? 'oilFilter_showResults()' : 'oilFilter_manualShowResults()';
 
       contentArea.innerHTML = `
         <div class="form-section full-width">
@@ -12994,7 +13400,25 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
 
     function oilFilter_showMajorService(event, price) {
       event.stopPropagation();
-      const message = `خدمة التصفية العامة تشمل: تبديل بلاكات، تبديل فلتر هواء، تبديل فلتر مكيف، منظف دورة البانزين، بخاخ التصفية، تبديل زيت المكينة، تبديل فلتر الزيت، برمجة علامة الخدمة، فحص مستوى الزيوت والسوائل، فحص المساحات والتواير، فحص السفايف والديسكات. السعر: ${price} د.ك`;
+      const message = `التصفية العامة في بورتراج
+
+التصفية العامة تشمل:
+
+* تبديل بلاكات
+* تبديل فلتر هواء
+* تبديل فلتر مكيف
+* منظف دورة البانزين
+* بخاخ التصفية
+* تبديل زيت المكينة
+* تبديل فلتر الزيت
+* برمجة علامة الخدمة (عن طريق جهاز الكومبيوتر)
+* فحص لمستوى الزيوت والسوائل (ماء راديتر - زيت السكان - زيت القير)
+* فحص لحالة المساحات والتواير
+* فحص السفايف والديسكات
+
+جميع القطع أصلية معتمدة من الوكلاء الرسمية
+
+رسوم الخدمة مع جميع القطع المذكورة: ${price} د.ك`;
       const modal = document.createElement('div');
       modal.className = 'modal-overlay';
       modal.innerHTML = `
@@ -13036,24 +13460,51 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       oilFilter_copyMessage(message);
     }
 
-    function oilFilter_copyMessage(message) {
+    function oilFilter_copyMessage(message, btn) {
       if (!message) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(message).then(() => {
-          oilFilter_showCopySuccess();
-        }).catch(() => {
-          oilFilter_fallbackCopyTextToClipboard(message);
+      const handleResult = (success) => oilFilter_showCopyStatus(btn, success);
+
+      const copyWithClipboard = () => {
+        return navigator.clipboard.writeText(message).then(() => true);
+      };
+
+      const copyWithFallback = () => {
+        return new Promise((resolve, reject) => {
+          const ta = document.createElement('textarea');
+          ta.value = message;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'absolute';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          try {
+            const successful = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (successful) {
+              resolve(true);
+            } else {
+              reject(new Error('execCommand failed'));
+            }
+          } catch (e) {
+            document.body.removeChild(ta);
+            reject(e);
+          }
         });
-      } else {
-        oilFilter_fallbackCopyTextToClipboard(message);
-      }
+      };
+
+      const copyPromise = (navigator.clipboard && navigator.clipboard.writeText)
+        ? copyWithClipboard().catch(() => copyWithFallback())
+        : copyWithFallback();
+
+      copyPromise.then(() => handleResult(true)).catch(() => handleResult(false));
     }
 
     function oilFilter_attachCopyButtons() {
       document.querySelectorAll('[data-copy-message]').forEach(btn => {
         if (btn.dataset.copyAttached) return;
         btn.dataset.copyAttached = 'true';
-        btn.onclick = () => oilFilter_copyMessage(btn.dataset.copyMessage || '');
+        btn.onclick = () => oilFilter_copyMessage(btn.dataset.copyMessage || '', btn);
       });
     }
 
@@ -13067,32 +13518,36 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         .replace(/\n/g, '&#10;');
     }
 
-    function oilFilter_showCopySuccess() {
-      const btns = document.querySelectorAll('.oil-copy-btn');
-      btns.forEach(btn => {
-        btn.classList.add('success');
-        btn.textContent = 'تم النسخ!';
-        setTimeout(() => {
-          btn.classList.remove('success');
-          btn.textContent = 'نسخ العرض';
-        }, 2000);
-      });
+    function oilFilter_copyAllOilsManual() {
+      const oils = oilFilter_stockData
+        .filter(oil => oil.type === oilFilter_selectedViscosity && oil.contAvailable >= oilFilter_liters)
+        .sort((a, b) => (a.effectivePriceLiter * oilFilter_liters) - (b.effectivePriceLiter * oilFilter_liters));
+
+      const allMessages = oils.map((oil, index) => {
+        const oilTotal = oil.effectivePriceLiter * oilFilter_liters;
+        const grandTotal = oilTotal + oilFilter_filterPrice + oilFilter_servicePrice;
+        return `${index + 1}- متوفر زيت ${oilFilter_translateBrand(oil.brand)} (${oilFilter_liters}) لتر ودرجة اللزوجة ${oil.type} مع الفلتر من الوكيل المعتمد مع فحص مجاني لمستوى غاز المكيف وإعادة برمجة علامة الخدمة جدام البيت بقيمة ${grandTotal.toFixed(3)} دك`;
+      }).join('\n\n');
+
+      oilFilter_copyMessage(allMessages);
     }
 
-    function oilFilter_fallbackCopyTextToClipboard(text) {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try {
-        document.execCommand('copy');
-        oilFilter_showCopySuccess();
-      } catch (e) {
-        console.warn('Fallback copy failed', e);
-        alert('فشل في النسخ');
+    function oilFilter_showCopyStatus(btn, success) {
+      if (!btn) return;
+      const originalText = btn.textContent;
+      const originalClass = btn.className;
+      btn.classList.remove('success', 'failure');
+      if (success) {
+        btn.classList.add('success');
+        btn.textContent = 'تم النسخ!';
+      } else {
+        btn.classList.add('failure');
+        btn.textContent = 'فشل في النسخ';
       }
-      document.body.removeChild(ta);
+      setTimeout(() => {
+        btn.className = originalClass;
+        btn.textContent = originalText;
+      }, 2000);
     }
   </script>
   <script>
