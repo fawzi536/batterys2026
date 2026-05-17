@@ -2317,7 +2317,7 @@
     .prot-important{ margin-top:12px; padding:12px; border-radius:8px; background: rgba(127,29,29,0.04); border:1px solid #ef4444; color:#ffb3b3; font-weight:700 }
     .prot-toast{ position:fixed; top:80px; right:40px; background:#F2BC1B; color:#000; padding:12px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.12); box-shadow:0 12px 40px rgba(0,0,0,0.6); display:none; z-index:1500; font-weight:700 }
     .battery-toast{ position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-20px) scale(0.95); background:#10b981; color:#fff; padding:18px 28px; border-radius:20px; border:2px solid rgba(255,255,255,0.3); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(16,185,129,0.4); display:none; z-index:2000; font-weight:700; font-size:15px; transition:all 0.3s ease; text-align:center; max-width:90%; white-space:nowrap; }
-    .tire-increase-wrapper { display: grid; grid-template-columns: minmax(180px, 220px) minmax(320px, 1fr) minmax(180px, 220px); gap: 12px; align-items: start; }
+    .tire-increase-wrapper { display: grid; grid-template-columns: minmax(180px, 220px) minmax(400px, 1fr) minmax(180px, 220px); gap: 12px; align-items: start; }
     .tire-increase-sidebar { background: rgba(12, 12, 12, 0.95); border: 1px solid rgba(242, 188, 27, 0.18); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 760px; overflow: auto; }
     .tire-increase-sidebar .sidebar-title { font-size: 13px; color: #F2BC1B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
     .tire-brand-list, .tire-increase-list { display: grid; gap: 8px; }
@@ -2326,10 +2326,10 @@
     .tire-brand-button.active, .tire-increase-button.active { background: #F2BC1B; color: #000; }
     .tire-increase-main { display: flex; flex-direction: column; gap: 12px; }
     .tire-increase-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
-    .tire-increase-output-box { background: #090909; border: 1px solid #333; border-radius: 10px; min-height: 250px; padding: 14px; overflow: auto; }
-    .tire-increase-output { font-family: 'Cairo', sans-serif; white-space: pre-wrap; line-height: 1.6; color: #e9e9e9; min-height: 220px; margin: 0; }
+    .tire-increase-output-box { background: #090909; border: 1px solid #333; border-radius: 10px; min-height: 220px; padding: 14px; overflow: auto; }
+    .tire-increase-output { font-family: 'Cairo', sans-serif; white-space: pre-wrap; line-height: 1.6; color: #e9e9e9; min-height: 190px; margin: 0; }
     .tire-note { background: rgba(242,188,27,0.08); border: 1px solid rgba(242,188,27,0.18); color: #f7e1a3; border-radius: 10px; padding: 10px; font-size: 13px; line-height: 1.5; }
-    .tire-increase-button-row { display: grid; gap: 8px; }
+    .tire-increase-button-row { display: flex; flex-direction: column; gap: 8px; }
     .tire-increase-sidebar .btn-inline { justify-content: flex-start; }
     /* Coordinates toast */
     .coords-toast{position:fixed;bottom:24px;left:24px;min-width:200px;max-width:calc(100vw - 48px);z-index:2200;padding:12px 16px;border-radius:10px;color:#000;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,0.45);display:none}
@@ -2943,34 +2943,149 @@
     }
 
     const TIRE_BRAND_RULES = [
+      { pattern: /\bOTANI\b/i, name: 'أوتاني تايلندي 🇹🇭' },
+      { pattern: /\bJOYROAD\b|\bJOY\b/i, name: 'جوي رود صيني 🇨🇳' },
+      { pattern: /\bZEETEX\b|\bZTX\b/i, name: 'زتكس تايلندي 🇹🇭' },
+      { pattern: /\bPEARLY\b/i, name: 'برلي صيني 🇨🇳' },
+      { pattern: /\bMAYRUN\b/i, name: 'مايرون صيني هندسه المانيه 🇨🇳' },
+      { pattern: /\bCOMRO\b|\bcomro\b/i, name: 'كرمرو صيني 🇨🇳' },
+      { pattern: /\bBRIDGESTONE\b|\bبريدجستون\b|\bBG\b/i, name: 'بريدجستون ياباني 🇯🇵' },
       { pattern: /\bBG2\b/i, name: 'بريدجستون بولندي 🇵🇱' },
-      { pattern: /\bBG\b|BRIDGESTONE/i, name: 'بريدجستون ياباني 🇯🇵' },
-      { pattern: /\bPR\b|PIRELLI/i, name: 'بيريلي اوربي 🇪🇺' },
-      { pattern: /\bMC\b|MICHELIN/i, name: 'ميشلان فرنسي 🇫🇷' },
-      { pattern: /\bYK\b|YOKOHAMA.*JAPAN|YOKOHAMA JAPAN|YOKOHAMA/i, name: 'يوكوهاما ياباني 🇯🇵' },
-      { pattern: /\bYF\b|YOKOHAMA.*PHILIPPINES|YOKOHAMA PHILIPPINES/i, name: 'يوكوهاما فلبيني 🇵🇭' },
-      { pattern: /\bYT\b|YOKOHAMA.*THAILAND|YOKOHAMA THAILAND/i, name: 'يوكوهاما تايلندي 🇹🇭' },
-      { pattern: /\bDP\b|DUNLOP/i, name: 'دنلوب ياباني 🇯🇵' },
-      { pattern: /\bKF\b|KING\s*FOREST|KINGFOREST/i, name: 'كين فورست صيني 🇨🇳' },
-      { pattern: /\bBW\b|BERWAY|BLACKWAY/i, name: 'بيرواي صيني 🇨🇳' },
-      { pattern: /\bRD\b|RODTSON/i, name: 'رودتسون كوري 🇰🇷' },
-      { pattern: /\bFK\b|FALKEN/i, name: 'فالكن ياباني 🇯🇵' },
-      { pattern: /\bNX\b|NEXEN/i, name: 'نكسن كوري 🇰🇷' },
-      { pattern: /\bBF\b|BFGOODRICH/i, name: 'BFGoodrich أمريكي 🇺🇸' },
-      { pattern: /GOODYEAR.*GERMANY|GOODYEAR.*DE|GOODYEAR GERMANY/i, name: 'قودير ألماني 🇩🇪' },
-      { pattern: /GOODYEAR/i, name: 'قودير أمريكي 🇺🇸' },
-      { pattern: /CONTINENTAL|CONTINENTAL GERMANY/i, name: 'كونتيننتال ألماني 🇩🇪' },
-      { pattern: /HANKOOK/i, name: 'هانكوك كوري 🇰🇷' }
+      { pattern: /\bPIRELLI\b|\bبيريلي\b|\bPR\b/i, name: 'بيريلي اوربي 🇪🇺' },
+      { pattern: /\bMICHELIN\b|\bميشلان\b|\bMC\b/i, name: 'ميشلان فرنسي 🇫🇷' },
+      { pattern: /\bHABILED\b/i, name: 'هابليد صيني 🇨🇳' },
+      { pattern: /\bANTREAS\b/i, name: 'انترس صيني 🇨🇳' },
+      { pattern: /\bGOODRIDE\b/i, name: 'قودرايد صيني 🇨🇳' },
+      { pattern: /\bBLACK HAWK\b/i, name: 'بلاك هوك صيني 🇨🇳' },
+      { pattern: /\bFIRESTONE\b/i, name: 'فاير ستون ياباني 🇯🇵' },
+      { pattern: /\bFALKEN\b|\bFK\b/i, name: 'فالكن ياباني 🇯🇵' },
+      { pattern: /\bNEXEN\b|\bNX\b/i, name: 'نكنس كوري 🇰🇷' },
+      { pattern: /\bSAFERICH\b/i, name: 'سافريج صيني 🇨🇳' },
+      { pattern: /\bGOODYEAR WRANGLER AT\b/i, name: 'قودير أمريكي {wrangler at} 🇺🇸' },
+      { pattern: /\bWESTLAKE CHINA\b|\bWESTLAKE\b/i, name: 'ويست ليك صيني 🇨🇳' },
+      { pattern: /\bYOKOHAMA PHILLIPINES\b|\bYF\b/i, name: 'يوكوهاما فلبيني 🇵🇭' },
+      { pattern: /\bYOKOHAMA THAILAND\b|\bYT\b/i, name: 'يوكوهاما تايلندي 🇹🇭' },
+      { pattern: /\bYOKOHAMA JAPAN\b|\bYOKOHAMA\b|\bYK\b/i, name: 'يوكاهاما ياباني 🇯🇵' },
+      { pattern: /\bKUMHO KOREA\b|\bKUMHO\b/i, name: 'كومهو كوري 🇰🇷' },
+      { pattern: /\bDUNLOP JAPAN\b|\bDUNLOP\b|\bDP\b/i, name: 'دنلوب ياباني 🇯🇵' },
+      { pattern: /\bACELRA INDONESIA\b|\bACELEA INDONESIA\b|\bACCALRA\b|\bACCELERA\b|\bACELEA\b|\bACELRA\b|\bACCALE\b|\bACCALRA\b/i, name: 'اكسلييرا اندونيسي 🇮🇩' },
+      { pattern: /\bGITI CHINA\b|\bGITI\b/i, name: 'جيتي صيني 🇨🇳' },
+      { pattern: /\bCEAT INDIA\b|\bCEAT\b/i, name: 'سيتا هندي 🇮🇳' },
+      { pattern: /\bHANKOOK EUROPE\b/i, name: 'هانكوك أوروبي 🇪🇺' },
+      { pattern: /\bHANKKOK KOREA\b|\bHANKOOK KOREA\b|\bHANKOOK\b|\bHANKKOK\b/i, name: 'هانكوك كوري 🇰🇷' },
+      { pattern: /\bLAUFENN KOREA\b|\bLAUFEN KOREA\b|\bLAUFENN\b|\bLAUFEN\b/i, name: 'لينوفو كوري 🇰🇷' },
+      { pattern: /\bANTARES CHINA\b|\bANTARES\b/i, name: 'انترس صيني 🇨🇳' },
+      { pattern: /\bBEARWAY CHINA\b|\bBEARWAY\b|\bBW\b/i, name: 'بيرواي صيني 🇨🇳' },
+      { pattern: /\bRUNWAY CHINA\b|\bRUNWAY\b/i, name: 'رن وي صيني 🇨🇳' },
+      { pattern: /\bROAD CHINA\b|\bRODA\b/i, name: 'رودا صيني 🇨🇳' },
+      { pattern: /\bROADKING\b/i, name: 'رودا كينق صيني 🇨🇳' },
+      { pattern: /\bFARRAOD CHINA\b|\bFARROAD CHINA\b|\bFARROAD\b|\bFARROAD CHINA\b|\bFARRAOD\b/i, name: 'فارود صيني 🇨🇳' },
+      { pattern: /\bCONTINENTAL EUROPE\b/i, name: 'كونتيننتال اوربي 🇪🇺' },
+      { pattern: /\bCONTINENTAL GERMANY\b|\bCONTINENTAL\b/i, name: 'كونتيننتال ألماني 🇩🇪' },
+      { pattern: /\bTOYO OP3G AT\b/i, name: 'تويو ياباني {op3g AT} 🇯🇵' },
+      { pattern: /\bTOYO USA\b/i, name: 'تويو أمريكي 🇺🇸' },
+      { pattern: /\bTOYO MALAYSIA\b/i, name: 'تويو ماليزي 🇲🇾' },
+      { pattern: /\bTOYO PXST\b/i, name: 'تويو ياباني {pxst} 🇯🇵' },
+      { pattern: /\bTOYO PXSP\.²\b|\bTOYO PXSP\b/i, name: 'تويو ياباني {pxsp} 🇯🇵' },
+      { pattern: /\bTOYO OPUT\b/i, name: 'تويو ياباني {oput} 🇯🇵' },
+      { pattern: /\bTOYO\b/i, name: 'تويو ياباني 🇯🇵' },
+      { pattern: /\bGOODYEAR GERMANY\b|\bGOOD YEAR GERMANY\b|\bGOOD YEAR GERMNAY\b/i, name: 'قودير ألماني 🇩🇪' },
+      { pattern: /\bGOODYEAR SOUTH AFRICA\b|\bGOOD YEAR SOUTH AFRICA\b/i, name: 'قودير جنوب أفريقيا 🇿🇦' },
+      { pattern: /\bGOODYEAR CANADA\b|\bGOOD YEAR CANADA\b/i, name: 'قودير كندي 🇨🇦' },
+      { pattern: /\bGOODYEAR FRANCE\b|\bGOOD YEAR FRANCE\b/i, name: 'قودير فرنسي 🇫🇷' },
+      { pattern: /\bGOODYEAR\b|\bGOOD YEAR\b/i, name: 'قودير أمريكي 🇺🇸' },
+      { pattern: /\bTRIANGLE CHINA\b|\bTRIANGLE\b|\bTRIANGL\b/i, name: 'تراينجل صيني 🇨🇳' },
+      { pattern: /\bKF\b|\bكين\b|\bكين فورست\b/i, name: 'كين فورست صيني 🇨🇳' },
+      { pattern: /\bGODDARD\b/i, name: 'قود ارد صيني 🇨🇳' },
+      { pattern: /\bرودتسون\b|\bRD\b/i, name: 'ردستون كوري 🇰🇷' },
+      { pattern: /\bBFGOODRICH\b|\bBF\b|\bBFGOODRICH\b/i, name: 'Bfgoodrich أمريكي 🇺🇸' },
+      { pattern: /\bSUMITOMO JAPAN\b/i, name: 'سوميتومو ياباني 🇯🇵' },
+      { pattern: /\bGOOD TRIP THAILAND\b/i, name: 'قود ترايب تايلندي 🇹🇭' },
+      { pattern: /\bLANDSPIDER\b/i, name: 'لاند سبايدر تايلندي 🇹🇭' },
+      { pattern: /\bATLANDER\b/i, name: 'أتلاندر تايلندي 🇹🇭' },
+      { pattern: /\bNEOTERRA\b/i, name: 'نيوتيرا تايلندي 🇹🇭' },
+      { pattern: /\bARROYO\b/i, name: 'أرويو تايلندي 🇹🇭' },
+      { pattern: /\bDEL\b|\bDELINTE\b/i, name: 'دلِنتي تايلندي 🇹🇭' },
+      { pattern: /\bGOOD TRIP\b/i, name: 'قود ترايب تايلندي 🇹🇭' },
+      { pattern: /\bFULDA\b/i, name: 'فولدا ألماني 🇩🇪' },
+      { pattern: /\bJPLANET KOREA\b|\bJPLANET\b/i, name: 'جي بلانت كوري 🇰🇷' },
+      { pattern: /\bAPTANY\b|\babtany\b/i, name: 'أبتاني صيني 🇨🇳' },
+      { pattern: /\bANNAITE\b/i, name: 'أنيت صيني 🇨🇳' },
+      { pattern: /\bWINDFORCE\b/i, name: 'ويندفورس صيني 🇨🇳' },
+      { pattern: /\bANCHEE\b/i, name: 'أنشي صيني 🇨🇳' },
+      { pattern: /\bDURUN\b/i, name: 'دورن صيني 🇨🇳' },
+      { pattern: /\bDOUBLESTAR\b/i, name: 'دبل ستار صيني 🇨🇳' },
+      { pattern: /\bFZRTRACK\b/i, name: 'فرزتراك صيني 🇨🇳' },
+      { pattern: /\bGLEDE\b/i, name: 'جلدي صيني 🇨🇳' },
+      { pattern: /\bCOPARTNER\b/i, name: 'كوبارتنر صيني 🇨🇳' },
+      { pattern: /\bRAMAL\b/i, name: 'رامال صيني 🇨🇳' },
+      { pattern: /\bGREENLANDER\b/i, name: 'جرينلاندر صيني 🇨🇳' },
+      { pattern: /\bHILO\b/i, name: 'هيلو صيني 🇨🇳' },
+      { pattern: /\bKINGBOSS\b/i, name: 'كينق بوس صيني 🇨🇳' },
+      { pattern: /\bMASSIMO\b/i, name: 'ماسيمو صيني 🇨🇳' },
+      { pattern: /\bNAAATS\b/i, name: 'ناتس صيني 🇨🇳' },
+      { pattern: /\bSEAM\b/i, name: 'سيم صيني 🇨🇳' },
+      { pattern: /\bSUNNY\b/i, name: 'سني صيني 🇨🇳' },
+      { pattern: /\bCROSSLEADER\b/i, name: 'كروس ليدر صيني 🇨🇳' },
+      { pattern: /\bIMPERIAL\b/i, name: 'امبريال صيني 🇨🇳' },
+      { pattern: /\bTRACMAX\b/i, name: 'ترامكس صيني 🇨🇳' },
+      { pattern: /\bCOMORO\b/i, name: 'كومورو صيني 🇨🇳' },
+      { pattern: /\bMASTERCRAFT\b/i, name: 'ماستركرافت أمريكي 🇺🇸' },
+      { pattern: /\bGENERAL\b/i, name: 'جنرال أمريكي 🇺🇸' },
+      { pattern: /\bDAVANTI\b/i, name: 'ديفانتي صيني هندسه اوربيه 🇨🇳' },
+      { pattern: /\bAPOLLO\b/i, name: 'أبولو هندي 🇮🇳' },
+      { pattern: /\bNAMA\b/i, name: 'ناما تايلندي 🇹🇭' },
+      { pattern: /\bWIDFORCE\b/i, name: 'ويدفورس صيني 🇨🇳' },
+      { pattern: /\bHABILEAD\b/i, name: 'هابليد صيني 🇨🇳' },
+      { pattern: /\bROCKBLADE\b|\bROCK BLADE\b/i, name: 'روك بليد صيني 🇨🇳' },
+      { pattern: /\bGALAXIA\b/i, name: 'جلاكسي صيني 🇨🇳' },
+      { pattern: /\bMARSWAY\b/i, name: 'مارس واي صيني 🇨🇳' },
+      { pattern: /\bHEADWAY\b/i, name: 'هيد واي صيني 🇨🇳' },
+      { pattern: /\bBSAIFSTON\b/i, name: 'بي سيفستون صيني 🇨🇳' },
+      { pattern: /\bBLACKHAWK\b/i, name: 'بلاك هوك صيني 🇨🇳' },
+      { pattern: /\bILINK\b|\bI LINK\b/i, name: 'اي لينك صيني 🇨🇳' },
+      { pattern: /\bCENTARA\b/i, name: 'سينتارا صيني 🇨🇳' },
+      { pattern: /\bZEXTOUR\b/i, name: 'زكستور صيني 🇨🇳' },
+      { pattern: /\bVIKRANT\b/i, name: 'فيكرانت هندي 🇮🇳' },
+      { pattern: /\bAOTELI\b/i, name: 'أوتيلي صيني 🇨🇳' },
+      { pattern: /\bTHREE\b/i, name: 'ثري صيني 🇨🇳' },
+      { pattern: /\bTRANSMATE\b/i, name: 'ترانزميت صيني 🇨🇳' },
+      { pattern: /\bROTALLA\b/i, name: 'روتالا صيني 🇨🇳' },
+      { pattern: /\bYUSTA\b/i, name: 'يوستا صيني 🇨🇳' },
+      { pattern: /\bWANDA\b/i, name: 'واندا صيني 🇨🇳' },
+      { pattern: /\bRAPID\b/i, name: 'رابيد صيني 🇨🇳' },
+      { pattern: /\bWANLI\b/i, name: 'وانلي صيني 🇨🇳' },
+      { pattern: /\bNANKANG\b/i, name: 'نانكانغ تايواني 🇹🇼' },
+      { pattern: /\bGREENLAND\b/i, name: 'جرين لاند صيني 🇨🇳' },
+      { pattern: /\bFRZTRAC\b/i, name: 'فرز تراك صيني 🇨🇳' },
+      { pattern: /\bROADMARCH\b/i, name: 'رودمارش صيني 🇨🇳' },
+      { pattern: /\bBSAIFSTONE\b/i, name: 'بسايفستون صيني 🇨🇳' },
+      { pattern: /\bATLAS\b/i, name: 'أطلس صيني 🇨🇳' },
+      { pattern: /\bMAXXIS\b/i, name: 'ماكسيس صيني 🇨🇳' },
+      { pattern: /\bZETUM KOREA\b|\bZETUM\b/i, name: 'زتنوم كوري 🇰🇷' },
+      { pattern: /\bROVELO\b/i, name: 'روفيلا صيني 🇨🇳' },
+      { pattern: /\bBOTO\b/i, name: 'بوتو صيني 🇨🇳' },
+      { pattern: /\bFRONWAY\b/i, name: 'فرن واي صيني 🇨🇳' },
+      { pattern: /\bWINTOUR CHINA\b|\bWINTOUR\b/i, name: 'ونتور صيني 🇨🇳' },
+      { pattern: /\bAPLUS\b/i, name: 'إيه بلس صيني 🇨🇳' },
+      { pattern: /\bTRAGMAX\b/i, name: 'تراج ماكس صيني 🇨🇳' },
+      { pattern: /\bCOOPER USA\b/i, name: 'كوبر أمريكي 🇺🇸' },
+      { pattern: /\bCOOPER\b/i, name: 'كوبر صيني 🇨🇳' }
     ];
 
     const TIRE_EXTRA_TRANSLATIONS = [
-      { pattern: /\bFRONT\b/i, value: 'أمامي' },
-      { pattern: /\bREAR\b/i, value: 'خلفي' },
-      { pattern: /\bRUN\s*FLAT\b/i, value: 'رن فلات' },
-      { pattern: /\bRFT\b/i, value: 'رن فلات' },
-      { pattern: /\bLIMITED\s*QTY\b/i, value: 'عدد محدود' },
-      { pattern: /\bQUARTER\s*HAJARI\b|\bLT\b/i, value: 'ربع حجري' },
-      { pattern: /\bFULL\s*HAJRI\b/i, value: 'فل حجري' }
+      { pattern: /\bFRONT\b/gi, value: 'أمامي' },
+      { pattern: /\bREAR\b/gi, value: 'خلفي' },
+      { pattern: /\bRUN\s*FLAT\b/gi, value: 'رن فلات' },
+      { pattern: /\bRFT\b/gi, value: 'رن فلات' },
+      { pattern: /\bLIMITED\s*QTY\b/gi, value: 'عدد محدود' },
+      { pattern: /\bQUARTER\s*HAJARI\b|\bQUARTER\s*STONE\b|\bLT\b/gi, value: 'ربع حجري' },
+      { pattern: /\bFULL\s*HAJRI\b/gi, value: 'فل حجري' },
+      { pattern: /\bHAJRI\b/gi, value: 'حجري' },
+      { pattern: /\bLAST\s*1\s*TIRE\b|\bLAST\s*2\s*TIRE\b|\bLAST\s*3\s*TIRE\b|\bLAST\s*4\s*TIRE\b|\bLAST\s*5\s*TIRE\b|\bLAST\s*FEW\s*TIRE\b|\bONLY\s*2\s*TIRE\s*AVAILABLE\b|\bONLY\s*1\s*TIRE\s*AVAILABLE\b/gi, value: 'عدد محدود من التواير' },
+      { pattern: /\bSPECIAL\s*FOR\s*MERCEDES\b/gi, value: 'مخصص لسيارات (مرسيدس)' },
+      { pattern: /\bSPECIAL\s*FOR\s*PORSCHE\b/gi, value: 'مخصص لسيارات (بورش)' },
+      { pattern: /\bAND\b/gi, value: 'و' }
     ];
 
     function detectTireBrand(text) {
@@ -3483,6 +3598,48 @@
           <h3 class="section-title">زيادات التواير</h3>
           <div class="tire-increase-wrapper">
             <div class="tire-increase-sidebar">
+              <div class="sidebar-title">زيادات ثابتة</div>
+              <div class="tire-increase-list">
+                ${[
+                  { value: '17', label: 'ساردار +17' },
+                  { value: '15', label: 'فرج حولي +15' },
+                  { value: '15', label: 'سوميتومو +15' },
+                  { value: '15', label: 'نيتو +15' },
+                  { value: '13', label: 'زيتيكس +13' },
+                  { value: '15', label: 'الساير يوكاهما +15' },
+                  { value: '13', label: 'برلين +13' },
+                  { value: '13', label: 'البابطين +13' },
+                  { value: '15', label: 'كوبر +15' },
+                  { value: '13', label: 'اوتو ون +13' },
+                  { value: '15', label: 'اف تي سي +15' },
+                  { value: '21', label: 'برجستون +21' },
+                  { value: '13', label: 'بلاك ارو +13' },
+                  { value: '15', label: 'دنيا الخير +15' },
+                  { value: '12', label: 'الغانم موتري كوري +12' },
+                  { value: '15', label: 'الغانم موتري صيني +15' },
+                  { value: '0.10', label: 'بيريلي 10%' }
+                ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
+              </div>
+            </div>
+            <div class="tire-increase-main">
+              <div class="form-field">
+                <label>أدخل سطور الإطارات</label>
+                <textarea id="tireIncreaseInput" class="form-control" rows="10" placeholder="مثال:\nPR 2023 25\nYK 2022 18\n205/55R16"></textarea>
+              </div>
+              <div class="form-field">
+                <label>الزيادة / القيمة</label>
+                <input id="tireIncreaseRate" class="form-control" type="number" step="0.01" placeholder="مثال 15 أو 0.10" />
+              </div>
+              <div id="tireIncreaseHint" class="tire-note">أدخل سطور الإطارات وقيمة الزيادة لعرض النتائج.</div>
+              <div class="tire-increase-actions">
+                <button id="tireCopyBtn" class="btn-outline btn-inline">نسخ النتائج</button>
+                <button id="tireClearBtn" class="btn-outline btn-inline">مسح</button>
+              </div>
+              <div id="tireIncreaseOutputBox" class="tire-increase-output-box hidden">
+                <pre id="tireIncreaseOutput" class="tire-increase-output"></pre>
+              </div>
+            </div>
+            <div class="tire-increase-sidebar">
               <div class="sidebar-title">اختصارات التواير</div>
               <div class="tire-brand-list">
                 ${[
@@ -3507,60 +3664,7 @@
                   { code: 'MICHELIN 2025', label: 'ميشلان 2025' }
                 ].map(item => `<button type="button" class="tire-brand-button" data-code="${item.code}">${item.label}</button>`).join('')}
               </div>
-              <div class="tire-note">اضغط رمز لنسخه داخل النص. يمكن استخدام الكلمات العربية أو الحروف الانجليزية.</div>
-            </div>
-            <div class="tire-increase-main">
-              <div class="form-field">
-                <label>أدخل سطور الإطارات</label>
-                <textarea id="tireIncreaseInput" class="form-control" rows="10" placeholder="مثال:\nPR 2023 25\nYK 2022 18\n205/55R16"></textarea>
-              </div>
-              <div class="form-grid">
-                <div class="form-field">
-                  <label>الزيادة / القيمة</label>
-                  <input id="tireIncreaseRate" class="form-control" type="number" step="0.01" placeholder="مثال 15 أو 0.10" />
-                </div>
-                <div class="form-field">
-                  <label>خيارات زيادات سريعة</label>
-                  <div class="tire-increase-button-row">
-                    ${[
-                      { value: '17', label: 'ساردار +17' },
-                      { value: '15', label: 'فرج حولي +15' },
-                      { value: '15', label: 'سوميتومو +15' },
-                      { value: '15', label: 'نيتو +15' },
-                      { value: '13', label: 'زيتيكس +13' },
-                      { value: '21', label: 'برجستون +21' },
-                      { value: '0.10', label: 'بيريلي 10%' }
-                    ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
-                  </div>
-                </div>
-              </div>
-              <div class="tire-increase-actions">
-                <button id="tireCalcBtn" class="btn-primary btn-inline">تحديث النتائج</button>
-                <button id="tireCopyBtn" class="btn-outline btn-inline">نسخ النتائج</button>
-                <button id="tireClearBtn" class="btn-outline btn-inline">مسح</button>
-              </div>
-              <div class="tire-increase-output-box">
-                <pre id="tireIncreaseOutput" class="tire-increase-output">أدخل البيانات والزيادة لتظهر النتائج هنا.</pre>
-              </div>
-            </div>
-            <div class="tire-increase-sidebar">
-              <div class="sidebar-title">زيادات ثابتة</div>
-              <div class="tire-increase-list">
-                ${[
-                  { value: '13', label: 'الميلم +13' },
-                  { value: '15', label: 'الساير يوكاهما +15' },
-                  { value: '13', label: 'برلين +13' },
-                  { value: '13', label: 'البابطين +13' },
-                  { value: '15', label: 'كوبر +15' },
-                  { value: '13', label: 'اوتو ون +13' },
-                  { value: '15', label: 'اف تي سي +15' },
-                  { value: '13', label: 'بلاك ارو +13' },
-                  { value: '15', label: 'دنيا الخير +15' },
-                  { value: '12', label: 'الغانم موتري كوري +12' },
-                  { value: '15', label: 'الغانم موتري صيني +15' }
-                ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
-              </div>
-              <div class="tire-note">إذا كان السطر يحتوي فقط على المقاس، سيبقى كما هو دون معالجة.</div>
+              <div class="tire-note">اضغط رمز لنسخه داخل textarea، أو اكتب الاسم عربي.</div>
             </div>
           </div>
         </div>
@@ -3569,16 +3673,34 @@
       const textarea = document.getElementById('tireIncreaseInput');
       const increaseInput = document.getElementById('tireIncreaseRate');
       const output = document.getElementById('tireIncreaseOutput');
+      const outputBox = document.getElementById('tireIncreaseOutputBox');
+      const hint = document.getElementById('tireIncreaseHint');
       const brandButtons = contentArea.querySelectorAll('.tire-brand-button');
       const increaseButtons = contentArea.querySelectorAll('.tire-increase-button');
-      const calcBtn = document.getElementById('tireCalcBtn');
       const copyBtn = document.getElementById('tireCopyBtn');
       const clearBtn = document.getElementById('tireClearBtn');
 
       function renderOutput() {
-        const increaseValue = parseFloat(increaseInput.value);
-        const resultText = processTireIncreaseInput(textarea.value, Number.isNaN(increaseValue) ? '' : increaseValue);
+        const text = textarea.value.trim();
+        const increaseRaw = increaseInput.value.trim();
+        const increaseValue = parseFloat(increaseRaw);
+
+        if (!text) {
+          outputBox.classList.add('hidden');
+          hint.textContent = 'أدخل سطور الإطارات لعرض النتائج.';
+          return;
+        }
+
+        if (increaseRaw === '' || Number.isNaN(increaseValue)) {
+          outputBox.classList.add('hidden');
+          hint.textContent = 'أدخل مبلغ الزيادة/القيمة حتى تظهر النتائج.';
+          return;
+        }
+
+        const resultText = processTireIncreaseInput(text, increaseValue);
         output.textContent = resultText || 'لا توجد بيانات صحيحة. تأكد من أن السطور تحتوي على اسم السنة والسعر.';
+        outputBox.classList.toggle('hidden', !resultText);
+        hint.textContent = resultText ? 'النتائج محدثة تلقائياً.' : 'تحقق من محتوى السطور أو قيمة الزيادة.';
       }
 
       function handleBrandClick(code) {
@@ -3614,17 +3736,18 @@
 
       textarea.addEventListener('input', renderOutput);
       increaseInput.addEventListener('input', renderOutput);
-      calcBtn.addEventListener('click', renderOutput);
       clearBtn.addEventListener('click', () => {
         textarea.value = '';
         increaseInput.value = '';
-        output.textContent = 'أدخل البيانات والزيادة لتظهر النتائج هنا.';
+        output.textContent = '';
+        outputBox.classList.add('hidden');
+        hint.textContent = 'أدخل سطور الإطارات وقيمة الزيادة لعرض النتائج.';
         textarea.focus();
       });
 
       copyBtn.addEventListener('click', async () => {
         const text = output.textContent || '';
-        if (!text.trim()) {
+        if (!text.trim() || outputBox.classList.contains('hidden')) {
           showToast('لا يوجد نص للنسخ', 'error');
           return;
         }
