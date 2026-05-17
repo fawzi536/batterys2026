@@ -3628,15 +3628,7 @@
                   { value: '15', label: 'الساير يوكاهما +15' },
                   { value: '13', label: 'برلين +13' },
                   { value: '13', label: 'البابطين +13' },
-                  { value: '15', label: 'كوبر +15' },
-                  { value: '13', label: 'اوتو ون +13' },
-                  { value: '15', label: 'اف تي سي +15' },
-                  { value: '21', label: 'برجستون +21' },
-                  { value: '13', label: 'بلاك ارو +13' },
-                  { value: '15', label: 'دنيا الخير +15' },
-                  { value: '12', label: 'الغانم موتري كوري +12' },
-                  { value: '15', label: 'الغانم موتري صيني +15' },
-                  { value: '0.10', label: 'بيريلي 10%' }
+                  { value: '15', label: 'كوبر +15' }
                 ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
               </div>
             </div>
@@ -3659,7 +3651,20 @@
               </div>
             </div>
             <div class="tire-increase-sidebar">
-              <div class="sidebar-title">زيادات ثابتة إضافية</div>
+              <div class="sidebar-title">زيادات ثابتة</div>
+              <div class="tire-increase-list">
+                ${[
+                  { value: '13', label: 'اوتو ون +13' },
+                  { value: '15', label: 'اف تي سي +15' },
+                  { value: '21', label: 'برجستون +21' },
+                  { value: '13', label: 'بلاك ارو +13' },
+                  { value: '15', label: 'دنيا الخير +15' },
+                  { value: '12', label: 'الغانم موتري كوري +12' },
+                  { value: '15', label: 'الغانم موتري صيني +15' },
+                  { value: '0.10', label: 'بيريلي 10%' }
+                ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
+              </div>
+              <div class="sidebar-title" style="margin-top: 16px;">زيادات ثابتة إضافية</div>
               <div class="tire-increase-list">
                 ${[
                   { value: '14', label: 'ميرشلان +14' },
@@ -3672,7 +3677,6 @@
                   { value: '11', label: 'ميشلان +11' }
                 ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
               </div>
-              <div class="tire-note">اختر نسبة أو قيمة من الجانبين لتطبيق الزيادة بسرعة.</div>
             </div>
           </div>
         </div>
