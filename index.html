@@ -3177,11 +3177,11 @@
       let finalPrice = price;
 
       if (isMichelin && year === 2024) {
-        finalPrice = price * 0.6 + 15;
+        finalPrice = price * 0.5 + 15;
       } else if (isMichelin && year === 2025) {
-        finalPrice = price * 0.7 + 15;
+        finalPrice = price * 0.3 + 15;
       } else if (isMichelin && year === 2026) {
-        finalPrice = price * 0.7 + 15;
+        finalPrice = price * 0.3 + 15;
       } else if (!Number.isNaN(increaseValue) && increaseValue !== null && increaseValue !== '') {
         if (increaseValue >= 1) {
           finalPrice = price + increaseValue;
