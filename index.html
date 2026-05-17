@@ -3164,7 +3164,7 @@
       return translateExtraTerms(cleaned || 'سعر الإطار');
     }
 
-    function calculateTireLine(line, increaseValue) {
+    function calculateTireLine(line, increaseValue, selectedMichelinYear) {
       const trimmed = line.trim();
       if (!trimmed) return '';
       if (isTireSizeOnly(trimmed)) return trimmed;
@@ -3176,12 +3176,12 @@
       const isMichelin = /\bMICHELIN\b|\bMC\b|ميشلان/i.test(trimmed);
       let finalPrice = price;
 
-      if (isMichelin && year === 2024) {
-        finalPrice = price * 0.5 + 15;
-      } else if (isMichelin && year === 2025) {
-        finalPrice = price * 0.3 + 15;
-      } else if (isMichelin && year === 2026) {
-        finalPrice = price * 0.3 + 15;
+      if (isMichelin && selectedMichelinYear) {
+        if (selectedMichelinYear === 2024) {
+          finalPrice = price * 0.6 + 15;
+        } else if (selectedMichelinYear === 2025) {
+          finalPrice = price * 0.7 + 15;
+        }
       } else if (!Number.isNaN(increaseValue) && increaseValue !== null && increaseValue !== '') {
         if (increaseValue >= 1) {
           finalPrice = price + increaseValue;
@@ -3196,11 +3196,11 @@
       return `${header} ${yearText}سعر الواحد ${formatTirePrice(finalPrice)} د.ك`;
     }
 
-    function processTireIncreaseInput(text, increaseValue) {
+    function processTireIncreaseInput(text, increaseValue, selectedMichelinYear) {
       const lines = text.split(/\r?\n/);
       const results = lines.map(line => {
         if (!line.trim()) return '';
-        return calculateTireLine(line, increaseValue);
+        return calculateTireLine(line, increaseValue, selectedMichelinYear);
       }).filter(Boolean);
       return results.join('\n');
     }
@@ -3649,6 +3649,13 @@
                 <label>ادخل قيمه الزياده</label>
                 <input id="tireIncreaseRate" class="form-control" type="number" step="0.01" placeholder="مثال 15 أو 0.10" />
               </div>
+              <div class="form-field">
+                <label>ميشلان - اختر السنة</label>
+                <div class="btn-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                  <button id="michelin2024Btn" class="btn-option" data-michelin-year="2024" style="font-size: 13px; padding: 10px 8px;">ميشلان 2024</button>
+                  <button id="michelin2025Btn" class="btn-option" data-michelin-year="2025" style="font-size: 13px; padding: 10px 8px;">ميشلان 2025</button>
+                </div>
+              </div>
               <div id="tireIncreaseHint" class="tire-note">أدخل انواع التواير وقيمة الزيادة لعرض النتائج.</div>
               <div class="tire-increase-actions">
                 <button id="tireCopyBtn" class="btn-outline btn-inline tire-action-btn">نسخ النتائج</button>
@@ -3669,8 +3676,7 @@
                   { value: '15', label: 'دنيا الخير +15' },
                   { value: '12', label: 'الغانم موتري كوري +12' },
                   { value: '15', label: 'الغانم موتري صيني +15' },
-                  { value: '0.10', label: 'بيريلي 10%' },
-                  { value: '13', label: 'ميشلان +13' }
+                  { value: '0.10', label: 'بيريلي 10%' }
                 ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
               </div>
             </div>
@@ -3686,6 +3692,10 @@
       const increaseButtons = contentArea.querySelectorAll('.tire-increase-button');
       const copyBtn = document.getElementById('tireCopyBtn');
       const clearBtn = document.getElementById('tireClearBtn');
+      const michelin2024Btn = document.getElementById('michelin2024Btn');
+      const michelin2025Btn = document.getElementById('michelin2025Btn');
+      
+      let selectedMichelinYear = null;
 
       function renderOutput() {
         const text = textarea.value.trim();
@@ -3704,11 +3714,25 @@
           return;
         }
 
-        const resultText = processTireIncreaseInput(text, increaseValue);
+        const resultText = processTireIncreaseInput(text, increaseValue, selectedMichelinYear);
         output.textContent = resultText || 'لا توجد بيانات صحيحة. تأكد من أن السطور تحتوي على اسم السنة والسعر.';
         outputBox.classList.toggle('hidden', !resultText);
         hint.textContent = resultText ? '' : 'تحقق من محتوى السطور أو قيمة الزيادة.';
       }
+
+      michelin2024Btn.addEventListener('click', () => {
+        michelin2024Btn.classList.add('active');
+        michelin2025Btn.classList.remove('active');
+        selectedMichelinYear = 2024;
+        renderOutput();
+      });
+
+      michelin2025Btn.addEventListener('click', () => {
+        michelin2025Btn.classList.add('active');
+        michelin2024Btn.classList.remove('active');
+        selectedMichelinYear = 2025;
+        renderOutput();
+      });
 
       increaseButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -3725,6 +3749,9 @@
         output.textContent = '';
         outputBox.classList.add('hidden');
         hint.textContent = '';
+        selectedMichelinYear = null;
+        michelin2024Btn.classList.remove('active');
+        michelin2025Btn.classList.remove('active');
         textarea.focus();
       });
 
