@@ -2206,7 +2206,7 @@
     /* Wash Cards Compact */
     .wash-cards-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       margin-top: 6px;
     }
@@ -11352,16 +11352,18 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           <h3 class="section-title">الاشتراك السنوي</h3>
           
           <div class="btn-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <button class="btn-option" data-subscription="individual" style="padding: 16px; text-align: center; line-height: 1.5;">
+            <div style="padding: 16px; text-align: center; line-height: 1.5; background: #1f1f1f; border: 1px solid rgba(242, 188, 27, 0.35); border-radius: 8px;">
               <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">🚗</div>
               <div style="font-size: 14px; font-weight: 700;">الاشتراك الفردي</div>
               <div style="font-size: 12px; color: #999; margin-top: 6px;">سيارة واحدة</div>
-            </button>
-            <button class="btn-option" data-subscription="family" style="padding: 16px; text-align: center; line-height: 1.5;">
+              <div style="font-size: 18px; font-weight: 700; color: #F2BC1B; margin-top: 8px;">15 د.ك</div>
+            </div>
+            <div style="padding: 16px; text-align: center; line-height: 1.5; background: #1f1f1f; border: 1px solid rgba(242, 188, 27, 0.35); border-radius: 8px;">
               <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">👨‍👩‍👧‍👦</div>
               <div style="font-size: 14px; font-weight: 700;">الاشتراك العائلي</div>
               <div style="font-size: 12px; color: #999; margin-top: 6px;">3 سيارات</div>
-            </button>
+              <div style="font-size: 18px; font-weight: 700; color: #F2BC1B; margin-top: 8px;">40 د.ك</div>
+            </div>
           </div>
           
           <div style="display: flex; gap: 8px; margin-bottom: 16px;">
@@ -11378,8 +11380,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         
         <div id="termsModal" class="modal-overlay hidden">
           <div class="modal" style="max-height: 80vh; overflow-y: auto;">
-            <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end;">
-              <button id="termsCopyBtn" type="button" class="btn-outline" aria-label="نسخ" title="نسخ النص">📋</button>
+            <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-bottom:16px;">
+              <button id="termsCopyBtn" type="button" class="btn-outline" aria-label="نسخ" title="نسخ النص" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px; font-weight: 600; background: #F2BC1B; color: #000; border: none;">
+                📋 نسخ
+              </button>
               <button type="button" class="modal-close" aria-label="إغلاق">×</button>
             </div>
             <h3 style="color: #F2BC1B; text-align: center; margin-bottom: 16px;">شروط وأحكام الاشتراك السنوي</h3>
@@ -11416,7 +11420,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               <div style="margin-bottom: 8px;">22- الامتثال للشروط - كمستخدم لخدمات شركة بورتراج للجر والمساعدة للمركبات على الطريق وبقبول هذا العرض، يوافق المشترك على الامتثال لشروط وأحكام شركة بورتراج للجر والمساعدة للمركبات على الطريق.</div>
             </div>
             <div style="display:flex;gap:8px;margin-top:16px;">
-              <button id="termsCopyBottomBtn" type="button" class="btn-outline">نسخ</button>
+              <button id="termsCopyBottomBtn" type="button" class="btn-outline" style="padding: 10px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; background: #F2BC1B; color: #000; border: none; flex: 1;">📋 نسخ</button>
               <button id="termsCloseBtn" class="btn-primary" style="flex:1;">إغلاق</button>
             </div>
           </div>
@@ -11424,8 +11428,10 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
         
         <div id="detailsModal" class="modal-overlay hidden">
           <div class="modal" style="max-height: 80vh; overflow-y: auto;">
-            <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end;">
-              <button id="detailsCopyBtn" type="button" class="btn-outline" aria-label="نسخ" title="نسخ النص">📋</button>
+            <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-bottom:16px;">
+              <button id="detailsCopyBtn" type="button" class="btn-outline" aria-label="نسخ" title="نسخ النص" style="padding: 10px 16px; display: flex; align-items: center; gap: 6px; font-weight: 600; background: #F2BC1B; color: #000; border: none;">
+                📋 نسخ
+              </button>
               <button type="button" class="modal-close" aria-label="إغلاق">×</button>
             </div>
             <h3 style="color: #F2BC1B; text-align: center; margin-bottom: 16px;">تفاصيل الاشتراك السنوي</h3>
@@ -11476,7 +11482,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
               </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:16px;">
-              <button id="detailsCopyBottomBtn" type="button" class="btn-outline">نسخ</button>
+              <button id="detailsCopyBottomBtn" type="button" class="btn-outline" style="padding: 10px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; background: #F2BC1B; color: #000; border: none; flex: 1;">📋 نسخ</button>
               <button id="detailsCloseBtn" class="btn-primary" style="flex:1;">إغلاق</button>
             </div>
           </div>
@@ -11524,25 +11530,6 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
       if (termsCopyBottom) termsCopyBottom.onclick = () => doCopy('termsContent');
       if (detailsCopyTop) detailsCopyTop.onclick = () => doCopy('detailsContent');
       if (detailsCopyBottom) detailsCopyBottom.onclick = () => doCopy('detailsContent');
-
-      // Handle subscription selection
-      document.querySelectorAll('[data-subscription]').forEach(btn => {
-        btn.onclick = () => {
-          const subType = btn.dataset.subscription;
-          let url = '';
-          
-          if (subType === 'individual') {
-            url = 'https://subs-portarage.com/product/yamVB9PmR4';
-          } else if (subType === 'family') {
-            url = 'https://subs-portarage.com/product/oYvREz8MJE';
-          }
-          
-          if (url) {
-            // Open in new window
-            window.open(url, '_blank');
-          }
-        };
-      });
     }
 
     // Ensure and open the Groups Modal without replacing existing UI
