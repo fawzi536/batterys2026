@@ -2976,6 +2976,7 @@
       { pattern: /\bBG2\b/i, name: 'بريدجستون بولندي 🇵🇱' },
       { pattern: /\bPIRELLI\b|\bبيريلي\b|\bPR\b/i, name: 'بيريلي اوربي 🇪🇺' },
       { pattern: /\bMICHELIN\b|\bميشلان\b|\bMC\b/i, name: 'ميشلان فرنسي 🇫🇷' },
+      { pattern: /\bMILLOM\b|\bميلم\b|\bML\b/i, name: 'ميلم 🛞' },
       { pattern: /\bHABILED\b/i, name: 'هابليد صيني 🇨🇳' },
       { pattern: /\bANTREAS\b/i, name: 'انترس صيني 🇨🇳' },
       { pattern: /\bGOODRIDE\b/i, name: 'قودرايد صيني 🇨🇳' },
@@ -3202,7 +3203,15 @@
         if (!line.trim()) return '';
         return calculateTireLine(line, increaseValue, selectedMichelinYear);
       }).filter(Boolean);
-      return results.join('\n');
+      
+      // Sort results from cheapest to most expensive
+      const sortedResults = results.sort((a, b) => {
+        const priceA = parseFloat(a.match(/([\d.]+)\s*د\.ك$/)?.[1] || 0);
+        const priceB = parseFloat(b.match(/([\d.]+)\s*د\.ك$/)?.[1] || 0);
+        return priceA - priceB;
+      });
+      
+      return sortedResults.join('\n');
     }
 
     function insertAtCursor(el, value) {
@@ -3636,6 +3645,7 @@
                   { value: '15', label: 'الساير يوكاهما +15' },
                   { value: '13', label: 'برلين +13' },
                   { value: '13', label: 'البابطين +13' },
+                  { value: '13', label: 'الميلم +13' },
                   { value: '15', label: 'كوبر +15' }
                 ].map(item => `<button type="button" class="tire-increase-button" data-value="${item.value}">${item.label}</button>`).join('')}
               </div>
@@ -3643,6 +3653,10 @@
               <div class="tire-increase-list">
                 <button id="michelin2024Btn" class="tire-increase-button" data-michelin-year="2024">ميشلان 2024</button>
                 <button id="michelin2025Btn" class="tire-increase-button" data-michelin-year="2025">ميشلان 2025</button>
+              </div>
+              <div class="sidebar-title" style="margin-top: 12px;">الميلم - اختر</div>
+              <div class="tire-increase-list">
+                <button id="millamBtn" class="tire-increase-button" data-value="13">الميلم +13</button>
               </div>
             </div>
             <div class="tire-increase-main">
